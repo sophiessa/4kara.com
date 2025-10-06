@@ -1,0 +1,9 @@
+from django.urls import path
+from .views import UserCreateView, JobCreateView
+from rest_framework.authtoken.views import obtain_auth_token
+
+urlpatterns = [
+    path('users/register/', UserCreateView.as_view(), name='user-register'),
+    path('users/login/', obtain_auth_token, name='user-login'),
+    path('jobs/create/', JobCreateView.as_view(), name='job-create'),
+]
