@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Job
+from .models import User, Job, Bid
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,3 +30,11 @@ class JobSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'customer', 'created_at', 'is_completed']
         # Make the customer field read-only in the serializer.
         read_only_fields = ['customer']
+
+class BidSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bid
+        # The user will only submit the amount and details.
+        fields = ['id', 'job', 'pro', 'amount', 'details', 'created_at']
+        # The job and pro will be set by the view, so they are read-only here.
+        read_only_fields = ['job', 'pro']
