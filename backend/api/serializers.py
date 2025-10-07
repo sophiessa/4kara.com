@@ -22,15 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class JobSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Job
-        # We only need title and description from the user when creating a job.
-        # The 'customer' will be set automatically from the logged-in user.
-        fields = ['id', 'title', 'description', 'customer', 'created_at', 'is_completed']
-        # Make the customer field read-only in the serializer.
-        read_only_fields = ['customer']
-
 class BidSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bid
@@ -38,3 +29,15 @@ class BidSerializer(serializers.ModelSerializer):
         fields = ['id', 'job', 'pro', 'amount', 'details', 'created_at']
         # The job and pro will be set by the view, so they are read-only here.
         read_only_fields = ['job', 'pro']
+
+class JobSerializer(serializers.ModelSerializer):
+    # Add this line to include the bids in the serializer.
+    bids = BidSerializer(many=True, read_only=True)
+    class Meta:
+        model = Job
+        # We only need title and description from the user when creating a job.
+        # The 'customer' will be set automatically from the logged-in user.
+        fields = ['id', 'title', 'description', 'customer', 'created_at', 'is_completed', 'bids']
+        # Make the customer field read-only in the serializer.
+        read_only_fields = ['customer']
+

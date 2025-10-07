@@ -4,6 +4,11 @@ from .models import User, Job, Bid
 from .serializers import UserSerializer, JobSerializer, BidSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import IsProfessionalUser
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+
 
 class UserCreateView(generics.CreateAPIView):
     """
@@ -67,3 +72,41 @@ class BidCreateView(generics.CreateAPIView):
         
         # Save the bid, associating it with the job and the authenticated pro user.
         serializer.save(job=job, pro=self.request.user)
+
+
+class LoginView(APIView):
+    """
+    Custom login view to return user data along with the token.
+    """
+    # This view should be public.
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            # User is valid, get or create a token.
+            token, created = Token.objects.get_or_create(user=user)
+            # Serialize the user data you want to return.
+            user_data = {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "is_pro": user.is_pro
+            }
+            return Response({"token": token.key, "user": user_data})
+        else:
+            # Invalid credentials.
+            return Response({"error": "Invalid Credentials"}, status=400)
+
+
+class JobDetailView(generics.RetrieveAPIView):
+    """
+    A view to retrieve a single job instance.
+    """
+    queryset = Job.objects.all()
+    serializer_class = JobSerializer
+    # Anyone who is logged in can view the details of a job.
+    permission_classes = [IsAuthenticated]

@@ -1,0 +1,96 @@
+// frontend/src/JobCreate.js
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+import { Container, Box, TextField, Button, Typography, Alert } from '@mui/material';
+
+function JobCreate() {
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+    const token = localStorage.getItem('authToken');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        if (!token) {
+            setError("You must be logged in to post a job.");
+            return;
+        }
+
+        try {
+            await axios.post('http://127.0.0.1:8000/api/jobs/create/', {
+                title,
+                description
+            }, {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+
+            // Redirect to the job list after successful creation.
+            navigate('/jobs');
+
+        } catch (err) {
+            console.error('Job creation failed:', err);
+            setError('Job creation failed. Please try again.');
+        }
+    };
+
+    return (
+        <Container component="main" maxWidth="xs">
+            <Box
+                sx={{
+                    marginTop: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}
+            >
+                <Typography component="h1" variant="h5">
+                    Post a New Job
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="title"
+                        label="Title"
+                        name="title"
+                        autoComplete="title"
+                        autoFocus
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="description"
+                        label="Description"
+                        name="description"
+                        multiline
+                        rows={4}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                    {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2 }}
+                    >
+                        Post Job
+                    </Button>
+                </Box>
+            </Box>
+        </Container>
+    );
+}
+
+export default JobCreate;
