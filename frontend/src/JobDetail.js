@@ -19,6 +19,22 @@ function JobDetail() {
     const token = localStorage.getItem('authToken');
     const user = JSON.parse(localStorage.getItem('user'));
 
+    const handleAcceptBid = async (bidId) => {
+        if (!window.confirm("Are you sure you want to accept this bid? This will close the job to further bidding.")) {
+            return;
+        }
+        try {
+            await axios.post(`http://127.0.0.1:8000/api/bids/${bidId}/accept/`, {}, {
+                headers: { 'Authorization': `Token ${token}` }
+            });
+            // Reload to see the updated job status
+            window.location.reload();
+        } catch (err) {
+            console.error('Error accepting bid:', err);
+            setError('Failed to accept the bid.');
+        }
+    };
+
     useEffect(() => {
         // ... (fetchJob logic remains the same, just add setLoading)
         if (!token) {
@@ -70,6 +86,9 @@ function JobDetail() {
             <Typography variant="body1" color="text.secondary" paragraph>
                 {job.description}
             </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+                Location: {job.street_address}, {job.city}, {job.state} {job.zip_code}
+            </Typography>
             
             <Divider sx={{ my: 3 }} />
 
@@ -103,21 +122,34 @@ function JobDetail() {
             {/* Bids List for the Job Owner */}
             {isOwner && (
                 <Box>
-                    <Typography variant="h5" component="h2" gutterBottom>Bids Received</Typography>
+                    <Typography variant="h5" component="h2" gutterBottom>
+                        {/* Show a different title if the job is completed */}
+                        {job.is_completed ? "Job Status: Closed" : "Bids Received"}
+                    </Typography>
                     {job.bids.length > 0 ? (
                         <List>
                             {job.bids.map(bid => (
-                                <ListItem key={bid.id} divider>
+                                <ListItem key={bid.id} divider
+                                    // Highlight the accepted bid
+                                    sx={job.accepted_bid === bid.id ? { backgroundColor: 'action.selected' } : {}}
+                                >
                                     <ListItemText
                                         primary={`$${bid.amount}`}
                                         secondary={bid.details}
                                     />
+                                    {/* Show the Accept button ONLY if the job is not yet completed */}
+                                    {!job.is_completed && (
+                                        <Button 
+                                            variant="outlined" 
+                                            onClick={() => handleAcceptBid(bid.id)}
+                                        >
+                                            Accept
+                                        </Button>
+                                    )}
                                 </ListItem>
                             ))}
                         </List>
-                    ) : (
-                        <Typography>No bids have been placed yet.</Typography>
-                    )}
+                    ) : ( <Typography>No bids have been placed yet.</Typography> )}
                 </Box>
             )}
         </Paper>

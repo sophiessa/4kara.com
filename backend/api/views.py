@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+from rest_framework import status
 
 
 class UserCreateView(generics.CreateAPIView):
@@ -94,7 +95,8 @@ class LoginView(APIView):
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
-                "is_pro": user.is_pro
+                "is_pro": user.is_pro,
+                "full_name": user.full_name
             }
             return Response({"token": token.key, "user": user_data})
         else:
@@ -110,3 +112,32 @@ class JobDetailView(generics.RetrieveAPIView):
     serializer_class = JobSerializer
     # Anyone who is logged in can view the details of a job.
     permission_classes = [IsAuthenticated]
+
+
+class AcceptBidView(APIView):
+    """
+    A view for a customer to accept a bid on their job.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, bid_id, *args, **kwargs):
+        # Get the bid object, or return 404 if it doesn't exist
+        bid = get_object_or_404(Bid, id=bid_id)
+        job = bid.job
+
+        # Security Check: Ensure the user making the request owns the job.
+        if job.customer != request.user:
+            return Response(
+                {"error": "You do not have permission to accept this bid."}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Update the job to accept the bid
+        job.accepted_bid = bid
+        job.is_completed = True # Mark the job as completed/closed for bidding
+        job.save()
+
+        return Response(
+            {"success": f"Bid {bid.id} has been accepted for job '{job.title}'."},
+            status=status.HTTP_200_OK
+        )

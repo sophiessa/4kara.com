@@ -28,6 +28,9 @@ function App() {
                 {/* Toolbar handles the horizontal layout of items */}
                 <Toolbar>
                     {/* Typography for the site title. The sx prop is for custom styling. */}
+                    {user && (
+                        <Typography sx={{ mr: 2 }}>Welcome, {user.full_name}</Typography>
+                    )}
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
                             4kara

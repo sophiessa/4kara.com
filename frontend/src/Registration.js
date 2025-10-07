@@ -9,6 +9,8 @@ function Registration() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     // The is_pro flag defaults to false (a Customer)
     const [isPro, setIsPro] = useState(false);
     const [error, setError] = useState('');
@@ -22,6 +24,8 @@ function Registration() {
             username,
             email,
             password,
+            full_name: fullName,
+            phone_number: phoneNumber,
             is_pro: isPro,
         };
 
@@ -33,10 +37,10 @@ function Registration() {
             navigate('/login');
 
         } catch (err) {
-            console.error('Registration failed:', err.response.data);
+            console.error('Registration failed:', err.response?.data || err.message);
             // Concatenate error messages from the backend for display
-            const errorData = err.response.data;
-            const errorMessages = Object.keys(errorData).map(key => `${key}: ${errorData[key].join(' ')}`).join('; ');
+            const errorData = err.response?.data || {};
+            const errorMessages = Object.keys(errorData).map(key => `${key}: ${Array.isArray(errorData[key]) ? errorData[key].join(' ') : errorData[key]}`).join('; ');
             setError(`Registration failed: ${errorMessages}`);
         }
     };
@@ -66,6 +70,26 @@ function Registration() {
                         autoFocus
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        fullWidth
+                        id="fullName"
+                        label="Full Name"
+                        name="full_name"
+                        autoComplete="name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        fullWidth
+                        id="phoneNumber"
+                        label="Phone Number"
+                        name="phone_number"
+                        autoComplete="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
                     />
                     <TextField
                         margin="normal"

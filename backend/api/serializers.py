@@ -5,7 +5,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # These are the fields that will be sent to the client and received from the client.
-        fields = ('id', 'username', 'email', 'password', 'is_pro')
+        fields = ('id', 'username', 'email', 'password', 'is_pro', 'full_name', 'phone_number')
         # We add extra settings for the password field.
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -37,7 +37,7 @@ class JobSerializer(serializers.ModelSerializer):
         model = Job
         # We only need title and description from the user when creating a job.
         # The 'customer' will be set automatically from the logged-in user.
-        fields = ['id', 'title', 'description', 'customer', 'created_at', 'is_completed', 'bids']
+        fields = ['id', 'title', 'description', 'customer', 'street_address', 'city', 'state', 'zip_code', 'created_at', 'is_completed', 'bids']
         # Make the customer field read-only in the serializer.
         read_only_fields = ['customer']
 

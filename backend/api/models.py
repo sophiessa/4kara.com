@@ -9,6 +9,10 @@ class User(AbstractUser):
     The `is_pro` boolean field distinguishes between Customers and Professionals.
     """
     is_pro = models.BooleanField('Is professional', default=False)
+    full_name = models.CharField(max_length=255, blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+    
+
 
 class Job(models.Model):
     """
@@ -22,6 +26,20 @@ class Job(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_completed = models.BooleanField(default=False)
+
+    street_address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=50)
+    zip_code = models.CharField(max_length=10)
+    
+    accepted_bid = models.ForeignKey(
+        'Bid', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='accepted_for_job'
+    )
+
 
     def __str__(self):
         return self.title

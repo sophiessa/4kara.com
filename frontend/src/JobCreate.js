@@ -8,6 +8,10 @@ import { Container, Box, TextField, Button, Typography, Alert } from '@mui/mater
 function JobCreate() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [streetAddress, setStreetAddress] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [zipCode, setZipCode] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const token = localStorage.getItem('authToken');
@@ -24,7 +28,11 @@ function JobCreate() {
         try {
             await axios.post('http://127.0.0.1:8000/api/jobs/create/', {
                 title,
-                description
+                description,
+                street_address: streetAddress,
+                city,
+                state,
+                zip_code: zipCode
             }, {
                 headers: {
                     'Authorization': `Token ${token}`
@@ -77,6 +85,50 @@ function JobCreate() {
                         rows={4}
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="streetAddress"
+                        label="Street Address"
+                        name="street_address"
+                        autoComplete="street-address"
+                        value={streetAddress}
+                        onChange={(e) => setStreetAddress(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="city"
+                        label="City"
+                        name="city"
+                        autoComplete="address-level2"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="state"
+                        label="State"
+                        name="state"
+                        autoComplete="address-level1"
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="zipCode"
+                        label="ZIP Code"
+                        name="zip_code"
+                        autoComplete="postal-code"
+                        value={zipCode}
+                        onChange={(e) => setZipCode(e.target.value)}
                     />
                     {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
                     <Button
