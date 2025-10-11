@@ -31,7 +31,7 @@ function Registration() {
 
         try {
             // Post the new user data to the registration endpoint
-            await axios.post('http://127.0.0.1:8000/api/users/register/', userData);
+            await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/users/register/`, userData);
             
             // On success, redirect the user to the login page
             navigate('/login');

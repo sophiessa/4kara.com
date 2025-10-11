@@ -141,3 +141,19 @@ class AcceptBidView(APIView):
             {"success": f"Bid {bid.id} has been accepted for job '{job.title}'."},
             status=status.HTTP_200_OK
         )
+
+class MyJobsListView(generics.ListAPIView):
+    """
+    A view for a customer to list only the jobs they have created.
+    """
+    serializer_class = JobSerializer
+    permission_classes = [IsAuthenticated] # Must be logged in
+
+    def get_queryset(self):
+        """
+        This view returns a list of all jobs created by the currently
+        authenticated user.
+        """
+        user = self.request.user
+        # We filter the Job objects to only those where the customer is the current user.
+        return Job.objects.filter(customer=user).order_by('-created_at')

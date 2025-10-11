@@ -17,7 +17,7 @@ function Login() {
         setError('');
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/users/login/', {
+            const response = await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/users/login/`, {
                 username,
                 password,
             });

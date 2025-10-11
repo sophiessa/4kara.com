@@ -26,7 +26,7 @@ function JobCreate() {
         }
 
         try {
-            await axios.post('http://127.0.0.1:8000/api/jobs/create/', {
+            await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/jobs/create/`, {
                 title,
                 description,
                 street_address: streetAddress,
@@ -40,7 +40,7 @@ function JobCreate() {
             });
 
             // Redirect to the job list after successful creation.
-            navigate('/jobs');
+            navigate('/my-jobs');
 
         } catch (err) {
             console.error('Job creation failed:', err);

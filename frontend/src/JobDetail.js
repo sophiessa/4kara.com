@@ -24,7 +24,7 @@ function JobDetail() {
             return;
         }
         try {
-            await axios.post(`http://127.0.0.1:8000/api/bids/${bidId}/accept/`, {}, {
+            await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/bids/${bidId}/accept/`, {}, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             // Reload to see the updated job status
@@ -43,7 +43,7 @@ function JobDetail() {
         }
         const fetchJob = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/jobs/${jobId}/`, {
+                const response = await axios.get(`${window.location.protocol}//${window.location.hostname}:8000/api/jobs/${jobId}/`, {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setJob(response.data);
@@ -60,7 +60,7 @@ function JobDetail() {
         // ... (handleBidSubmit logic is the same)
         e.preventDefault();
         try {
-            await axios.post(`http://127.0.0.1:8000/api/jobs/${jobId}/bid/`, { amount: bidAmount, details: bidDetails }, {
+            await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/jobs/${jobId}/bid/`, { amount: bidAmount, details: bidDetails }, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             window.location.reload();

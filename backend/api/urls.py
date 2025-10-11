@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserCreateView, JobCreateView, JobListView, BidCreateView, LoginView, JobDetailView, AcceptBidView
+from .views import UserCreateView, JobCreateView, JobListView, BidCreateView, LoginView, JobDetailView, AcceptBidView, MyJobsListView
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
@@ -10,4 +10,6 @@ urlpatterns = [
     path('jobs/<int:job_id>/bid/', BidCreateView.as_view(), name='bid-create'),
     path('jobs/<int:pk>/', JobDetailView.as_view(), name='job-detail'),
     path('bids/<int:bid_id>/accept/', AcceptBidView.as_view(), name='accept-bid'),
+    path('my-jobs/', MyJobsListView.as_view(), name='my-jobs-list'),
+
 ]

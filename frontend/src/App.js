@@ -9,6 +9,7 @@ import Login from './Login';
 import Registration from './Registration';
 import JobCreate from './JobCreate';
 import JobDetail from './JobDetail';
+import MyJobs from './MyJobs';
 import './App.css';
 
 function App() {
@@ -33,17 +34,26 @@ function App() {
                     )}
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-                            4kara
+                            4KARA LLC
                         </RouterLink>
                     </Typography>
                     
-                    {/* We use MUI Buttons that act as Links */}
-                    <Button color="inherit" component={RouterLink} to="/jobs">Jobs</Button>
-                    
-                    {user && !user.is_pro && (
-                         <Button color="inherit" component={RouterLink} to="/jobs/create">Post Job</Button>
+                    {user && user.is_pro && (
+                        <>
+                        {/* A general "Jobs" link for professionals to browse */}
+                        <Button color="inherit" component={RouterLink} to="/jobs">Browse Jobs</Button>
+                        </>
                     )}
-
+                    
+                    {/* Conditional links for Customers */}
+                    {user && !user.is_pro && (
+                         <>
+                            {/* The new "My Jobs" link */}
+                            <Button color="inherit" component={RouterLink} to="/my-jobs">My Jobs</Button>
+                            <Button color="inherit" component={RouterLink} to="/jobs/create">Post Job</Button>
+                         </>
+                    )}
+                    
                     {token ? (
                         <Button color="inherit" onClick={handleLogout}>Logout</Button>
                     ) : (
@@ -52,6 +62,8 @@ function App() {
                             <Button color="inherit" component={RouterLink} to="/login">Login</Button>
                         </>
                     )}
+
+                    
                 </Toolbar>
             </AppBar>
 
@@ -64,6 +76,7 @@ function App() {
                     <Route path="/register" element={<Registration />} />
                     <Route path="/jobs/create" element={<JobCreate />} />
                     <Route path="/jobs/:jobId" element={<JobDetail />} />
+                    <Route path="/my-jobs" element={<MyJobs />} />
                 </Routes>
             </Container>
         </Router>
