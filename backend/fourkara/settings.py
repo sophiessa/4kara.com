@@ -9,21 +9,27 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
+import dj_database_url
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-bju8mq_$%-v1(mdygy4&ao#v5uq_%$f=w6-ypy0-e$97xie!_-'
+SECRET_KEY = os.environ.get('SECRET_KEY')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
@@ -149,5 +155,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
 ]
 
-# For development - allow all origins (remove in production)
-CORS_ALLOW_ALL_ORIGINS = True
+RENDER_EXTERNAL_URL = os.environ.get('RENDER_EXTERNAL_URL')
+if RENDER_EXTERNAL_URL:
+    CORS_ALLOWED_ORIGINS.append(RENDER_EXTERNAL_URL)
