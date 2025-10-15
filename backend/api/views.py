@@ -9,6 +9,9 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework import status
+from rest_framework import generics, permissions
+from rest_framework.filters import SearchFilter, OrderingFilter 
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class UserCreateView(generics.CreateAPIView):
@@ -40,17 +43,25 @@ class JobCreateView(generics.CreateAPIView):
 
 class JobListView(generics.ListAPIView):
     """
-    A view for professionals to list all available (incomplete) jobs.
+    A view for professionals to list all available (incomplete) jobs,
+    with search, filtering, and ordering capabilities.
     """
     serializer_class = JobSerializer
-    # This view is protected by our custom permission.
     permission_classes = [IsProfessionalUser]
+    
+
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['zip_code', 'state'] # Allow filtering by these exact fields
+    search_fields = ['title', 'description'] # Allow full-text search on these fields
+    ordering_fields = ['created_at', 'city'] # Allow sorting by these fields
+
 
     def get_queryset(self):
         """
         This view should return a list of all jobs that are not yet completed.
         """
         return Job.objects.filter(is_completed=False)
+
 
 
 class BidCreateView(generics.CreateAPIView):

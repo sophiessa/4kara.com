@@ -1,17 +1,21 @@
 // frontend/src/JobList.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link as RouterLink } from 'react-router-dom';
-
-// Import necessary MUI components for a card grid layout
-import { Grid, Card, CardActionArea, CardContent, Typography, Alert, CircularProgress, Box } from '@mui/material';
+import api from './api'; // Use our centralized api instance
+import { Grid, Card, CardActionArea, CardContent, Typography, Alert, CircularProgress, Box, TextField } from '@mui/material';
 
 function JobList() {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    // --- New State for Search and Filter ---
+    const [searchQuery, setSearchQuery] = useState('');
+    const [zipFilter, setZipFilter] = useState('');
+
     const authToken = localStorage.getItem('authToken');
 
+    // The useEffect hook now re-runs whenever the search or filter text changes
     useEffect(() => {
         const fetchJobs = async () => {
             if (!authToken) {
@@ -19,67 +23,98 @@ function JobList() {
                 setLoading(false);
                 return;
             }
+            
+            setLoading(true); // Show loading spinner on new searches
+
             try {
-                const response = await axios.get(`${window.location.protocol}//${window.location.hostname}:8000/api/jobs/`, {
-                    headers: { 'Authorization': `Token ${authToken}` }
+                // Construct query parameters
+                const params = new URLSearchParams();
+                if (searchQuery) {
+                    params.append('search', searchQuery);
+                }
+                if (zipFilter) {
+                    params.append('zip_code', zipFilter);
+                }
+
+                // Make the API call with the parameters
+                const response = await api.get('/api/jobs/', { 
+                    headers: { 'Authorization': `Token ${authToken}` },
+                    params: params // Axios will append these to the URL
                 });
+                
                 setJobs(response.data);
                 setError('');
             } catch (err) {
-                console.error('Error fetching jobs:', err);
-                setError('Failed to fetch jobs. Your token may be invalid or you are not a professional user.');
+                setError('Failed to fetch jobs.');
             } finally {
                 setLoading(false);
             }
         };
-        fetchJobs();
-    }, [authToken]);
 
-    if (loading) {
-        // Display a loading spinner while data is being fetched.
-        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-    }
+        // This timeout debounce prevents an API call on every single keystroke
+        const searchTimeout = setTimeout(() => {
+            fetchJobs();
+        }, 500); // Wait 500ms after user stops typing
 
-    if (error) {
-        return <Alert severity="error">{error}</Alert>;
-    }
+        // Cleanup function to cancel the timeout if the user types again
+        return () => clearTimeout(searchTimeout);
+
+    }, [authToken, searchQuery, zipFilter]); // <<< Dependency array updated
 
     return (
         <div>
             <Typography variant="h4" component="h1" gutterBottom>
-                Available Jobs
+                Browse Available Jobs
             </Typography>
-            {/* Grid container handles the overall layout. 'spacing' adds gaps between items. */}
-            <Grid container spacing={3}>
-                {jobs.length > 0 ? (
-                    jobs.map(job => (
-                        // Grid item defines how much space each card takes on different screen sizes.
-                        // xs=12: full width on extra-small screens.
-                        // sm=6: half width on small screens.
-                        // md=4: one-third width on medium screens.
-                        <Grid item xs={12} sm={6} md={4} key={job.id}>
-                            <Card sx={{ height: '100%' }}>
-                                {/* CardActionArea makes the entire card a clickable surface. */}
-                                <CardActionArea component={RouterLink} to={`/jobs/${job.id}`} sx={{ height: '100%' }}>
-                                    <CardContent>
-                                        <Typography gutterBottom variant="h5" component="div">
-                                            {job.title}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {/* Truncate long descriptions for the list view */}
-                                            {job.description.substring(0, 100)}{job.description.length > 100 && '...'}
-                                        </Typography>
-                                    </CardContent>
-                                </CardActionArea>
-                            </Card>
+
+            {/* --- Search and Filter Inputs --- */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+                <TextField 
+                    label="Search by keyword..."
+                    variant="outlined"
+                    fullWidth
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <TextField 
+                    label="Filter by Zip Code..."
+                    variant="outlined"
+                    value={zipFilter}
+                    onChange={(e) => setZipFilter(e.target.value)}
+                />
+            </Box>
+
+            {/* --- Conditional Rendering for Loading/Error/Content --- */}
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /> </Box>
+            ) : error ? (
+                <Alert severity="error">{error}</Alert>
+            ) : (
+                <Grid container spacing={3}>
+                    {jobs.length > 0 ? (
+                        jobs.map(job => (
+                            <Grid item xs={12} sm={6} md={4} key={job.id}>
+                                <Card sx={{ height: '100%' }}>
+                                    <CardActionArea component={RouterLink} to={`/jobs/${job.id}`} sx={{ height: '100%' }}>
+                                        <CardContent>
+                                            <Typography gutterBottom variant="h5" component="div">
+                                                {job.title}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {job.city}, {job.state} {job.zip_code}
+                                            </Typography>
+                                        </CardContent>
+                                    </CardActionArea>
+                                </Card>
+                            </Grid>
+                        ))
+                    ) : (
+                        <Grid item xs={12}>
+                            <Typography>No jobs match your criteria.</Typography>
                         </Grid>
-                    ))
-                ) : (
-                    <Grid item xs={12}>
-                        <Typography>No jobs available.</Typography>
-                    </Grid>
-                )}
-            </Grid>
+                    )}
+                </Grid>
+            )}
         </div>
     );
 }
