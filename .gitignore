@@ -23,6 +23,9 @@ venv/
 .env.*
 .venv/
 backend/venv/
+*.env/
+frontend/.env
+backend/.env
 
 # Django specific
 local_settings.py
