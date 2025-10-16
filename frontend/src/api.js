@@ -2,8 +2,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    // Use the variable from .env, but if it's not there, default to localhost.
-    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+    // Use dynamic hostname for cross-device compatibility
+    baseURL: process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:8000`,
 });
 
 export default api;

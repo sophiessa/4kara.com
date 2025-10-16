@@ -1,3 +1,12 @@
+import os
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
+
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from .models import User, Job, Bid
@@ -168,3 +177,72 @@ class MyJobsListView(generics.ListAPIView):
         user = self.request.user
         # We filter the Job objects to only those where the customer is the current user.
         return Job.objects.filter(customer=user).order_by('-created_at')
+
+
+# Replace your old GoogleLoginView with this one
+class GoogleLoginView(APIView):
+    """
+    Custom view for Google OAuth login.
+    Receives an ID token from the frontend, verifies it with Google,
+    and then creates or logs in the user, returning a DRF token.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        token = request.data.get('id_token')
+        
+        if not token:
+            return Response({'error': 'ID token is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # 1. VERIFY THE TOKEN
+            # This line sends the token to Google's servers to check if it's valid.
+            # It also checks that the token was issued for YOUR application.
+            idinfo = google_id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+            )
+
+            print(os.environ.get('GOOGLE_OAUTH_CLIENT_ID'))
+            
+            # 2. GET USER INFO FROM VERIFIED TOKEN
+            # If verify_oauth2_token doesn't raise an error, the token is valid.
+            # We can now safely trust the information in idinfo.
+            email = idinfo['email']
+            full_name = idinfo.get('name', '')
+            
+            # 3. CREATE OR GET USER
+            # Now we find the user with that verified email or create them.
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    'username': email, # Use email as username for simplicity
+                    'full_name': full_name,
+                    'is_pro': False # Default new users to customer
+                }
+            )
+            
+            # 4. ISSUE YOUR APP'S TOKEN
+            drf_token, created = Token.objects.get_or_create(user=user)
+            
+            # Prepare user data to send back to the frontend
+            user_data = {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "is_pro": user.is_pro,
+                "full_name": user.full_name
+            }
+            
+            return Response({
+                'key': drf_token.key,
+                'user': user_data
+            })
+            
+        except ValueError as e:
+            # This error is raised if the token is invalid
+            return Response({'error': 'Invalid Google token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': 'An unexpected error occurred', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

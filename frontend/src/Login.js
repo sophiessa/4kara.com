@@ -4,7 +4,9 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 // Import MUI components
-import { Container, Box, TextField, Button, Typography, Alert } from '@mui/material';
+import { Container, Box, TextField, Button, Typography, Alert, Divider } from '@mui/material';
+import GoogleLoginButton from './GoogleLoginButton';
+
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -52,6 +54,12 @@ function Login() {
                 <Typography component="h1" variant="h5">
                     Sign In
                 </Typography>
+
+                <Box sx={{ mt: 3, mb: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                    <GoogleLoginButton />
+                </Box>
+
+                <Divider sx={{ width: '100%' }}>OR</Divider>
                 {/* We use Box for the form element itself to attach the onSubmit handler. */}
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
                     {/* TextField is the MUI equivalent of an <input> tag. */}
@@ -79,6 +87,8 @@ function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
+
+                
                     {/* Button provides styled buttons with ripple effects. */}
                     <Button
                         type="submit"
@@ -90,6 +100,8 @@ function Login() {
                     </Button>
                     {/* Use the Alert component for displaying errors. */}
                     {error && <Alert severity="error">{error}</Alert>}
+
+                    
                 </Box>
             </Box>
         </Container>

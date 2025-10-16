@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # Load environment variables from .env file
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
@@ -37,12 +38,15 @@ if DEV_HOST:
     ALLOWED_HOSTS.append(DEV_HOST)
 
 
+
 if DEBUG:
     ALLOWED_HOSTS.append('127.0.0.1')
     ALLOWED_HOSTS.append('localhost')
 
 
 # Application definition
+
+# backend/fourkara/settings.py
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -51,10 +55,28 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # 3rd Party Apps
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
     'django_filters',
+    'django_extensions', 
+
+    # Allauth apps - THE ORDER HERE IS IMPORTANT
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',  
+    'allauth.socialaccount.providers.google',
+
+    # dj-rest-auth apps
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+
+    # Django dependency
+    'django.contrib.sites',
+
+    # Your local app
     'api.apps.ApiConfig',
 ]
 
@@ -63,6 +85,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -117,9 +140,51 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
+AUTH_USER_MODEL = 'api.User'
+
+
+# backend/fourkara/settings.py
+
+# --- Allauth & dj-rest-auth Settings (Corrected for allauth v65+) ---
+# backend/fourkara/settings.py
+
+# --- Allauth & dj-rest-auth Settings (Corrected for v65+) ---
+
+SITE_ID = 1
+REST_AUTH = { 'USE_JWT': False }
+
+# --- django-allauth Modern Configuration ---
+
+# This directly addresses the deprecation warnings.
+# We are now using the new required keys.
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_VERIFICATION = "none" # Set to "none" for simplicity during debug
+
+# Provider configuration remains the same.
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.environ.get('GOOGLE_OAUTH_CLIENT_ID'),
+            'secret': os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET'),
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+
 
 LANGUAGE_CODE = 'en-us'
 
@@ -140,8 +205,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model
-AUTH_USER_MODEL = 'api.User'
+
 
 # Django REST Framework
 REST_FRAMEWORK = {
@@ -159,3 +223,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://192.168.1.87:3000',
 ]
+
+
+
+
