@@ -10,6 +10,7 @@ import Registration from './Registration';
 import JobCreate from './JobCreate';
 import JobDetail from './JobDetail';
 import MyJobs from './MyJobs';
+import ConversationPage from './ConversationPage';
 import './App.css';
 
 function App() {
@@ -77,6 +78,7 @@ function App() {
                     <Route path="/jobs/create" element={<JobCreate />} />
                     <Route path="/jobs/:jobId" element={<JobDetail />} />
                     <Route path="/my-jobs" element={<MyJobs />} />
+                    <Route path="/jobs/:jobId/conversation" element={<ConversationPage />} />
                 </Routes>
             </Container>
         </Router>

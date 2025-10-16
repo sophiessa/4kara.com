@@ -1,6 +1,6 @@
 // frontend/src/JobDetail.js
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import axios from 'axios';
 
 // Import a larger set of MUI components for layout and display
@@ -18,6 +18,8 @@ function JobDetail() {
 
     const token = localStorage.getItem('authToken');
     const user = JSON.parse(localStorage.getItem('user'));
+
+    
 
     const handleAcceptBid = async (bidId) => {
         if (!window.confirm("Are you sure you want to accept this bid? This will close the job to further bidding.")) {
@@ -77,12 +79,28 @@ function JobDetail() {
 
     const isOwner = user && user.id === job.customer;
 
+    const isHiredPro = user && job.accepted_bid && user.id === job.accepted_bid.pro;
+
     return (
         // Paper provides a clean, elevated surface for the content.
         <Paper elevation={3} sx={{ p: 4 }}>
-            <Typography variant="h3" component="h1" gutterBottom>
-                {job.title}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h3" component="h1" gutterBottom>
+                    {job.title}
+                </Typography>
+                
+                {/* --- ADD THIS BUTTON --- */}
+                {/* Show button only if job is closed AND user is the owner or the hired pro */}
+                {job.is_completed && (isOwner || isHiredPro) && (
+                    <Button 
+                        variant="contained" 
+                        component={RouterLink} 
+                        to={`/jobs/${job.id}/conversation`}
+                    >
+                        View Conversation
+                    </Button>
+                )}
+            </Box>
             <Typography variant="body1" color="text.secondary" paragraph>
                 {job.description}
             </Typography>
