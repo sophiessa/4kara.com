@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Job, Bid
+from .models import User, Job, Bid, Message
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,3 +41,16 @@ class JobSerializer(serializers.ModelSerializer):
         # Make the customer field read-only in the serializer.
         read_only_fields = ['customer']
 
+class MessageSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Message model.
+    Includes sender's full_name for display purposes.
+    """
+    # Source='sender.full_name' pulls the full_name from the related User model.
+    sender_name = serializers.CharField(source='sender.full_name', read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ['id', 'job', 'sender', 'sender_name', 'receiver', 'body', 'timestamp']
+        # The sender and receiver are determined by the server, not the client.
+        read_only_fields = ['sender', 'receiver', 'job']

@@ -59,3 +59,17 @@ class Bid(models.Model):
 
     def __str__(self):
         return f"Bid of ${self.amount} by {self.pro.username} on '{self.job.title}'"
+
+
+class Message(models.Model):
+    """
+    A model for a single message in a conversation.
+    """
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    body = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'From {self.sender.username} to {self.receiver.username} re: "{self.job.title}"'

@@ -9,8 +9,8 @@ from rest_framework.permissions import AllowAny
 
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
-from .models import User, Job, Bid
-from .serializers import UserSerializer, JobSerializer, BidSerializer
+from .models import User, Job, Bid, Message
+from .serializers import UserSerializer, JobSerializer, BidSerializer, MessageSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import IsProfessionalUser
 from rest_framework.views import APIView
@@ -246,3 +246,48 @@ class GoogleLoginView(APIView):
             return Response({'error': 'Invalid Google token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': 'An unexpected error occurred', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class MessageListView(generics.ListAPIView):
+    """
+    Lists messages for a specific job.
+    Access is restricted to the job's customer and the accepted professional.
+    """
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        job_id = self.kwargs['job_id']
+        job = get_object_or_404(Job, id=job_id)
+        user = self.request.user
+
+        # Security check: Ensure the user is either the customer or the hired pro.
+        # The job must have an accepted bid to have a conversation.
+        if job.accepted_bid and (user == job.customer or user == job.accepted_bid.pro):
+            return Message.objects.filter(job=job).order_by('timestamp')
+        
+        # If the user is not a participant, return an empty list.
+        return Message.objects.none()
+
+class MessageCreateView(generics.CreateAPIView):
+    """
+    Creates a new message for a specific job.
+    """
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        job_id = self.kwargs['job_id']
+        job = get_object_or_404(Job, id=job_id)
+        user = self.request.user
+
+        # Determine the receiver of the message.
+        if user == job.customer:
+            receiver = job.accepted_bid.pro
+        elif job.accepted_bid and user == job.accepted_bid.pro:
+            receiver = job.customer
+        else:
+            # If the user is not a participant, block the message creation.
+            raise serializers.ValidationError("You do not have permission to post messages for this job.")
+
+        serializer.save(job=job, sender=user, receiver=receiver)
