@@ -33,11 +33,12 @@ class BidSerializer(serializers.ModelSerializer):
 class JobSerializer(serializers.ModelSerializer):
     # Add this line to include the bids in the serializer.
     bids = BidSerializer(many=True, read_only=True)
+    accepted_bid = BidSerializer(read_only=True)
     class Meta:
         model = Job
         # We only need title and description from the user when creating a job.
         # The 'customer' will be set automatically from the logged-in user.
-        fields = ['id', 'title', 'description', 'customer', 'street_address', 'city', 'state', 'zip_code', 'created_at', 'is_completed', 'bids']
+        fields = ['id', 'title', 'description', 'customer', 'street_address', 'city', 'state', 'zip_code', 'created_at', 'is_completed', 'bids', 'accepted_bid']
         # Make the customer field read-only in the serializer.
         read_only_fields = ['customer']
 

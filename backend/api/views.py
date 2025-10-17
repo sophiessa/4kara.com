@@ -291,3 +291,19 @@ class MessageCreateView(generics.CreateAPIView):
             raise serializers.ValidationError("You do not have permission to post messages for this job.")
 
         serializer.save(job=job, sender=user, receiver=receiver)
+
+class MyAcceptedJobsListView(generics.ListAPIView):
+    """
+    A view for a professional to list the jobs they have been hired for.
+    """
+    serializer_class = JobSerializer
+    permission_classes = [IsProfessionalUser] # Only pros can access this
+
+    def get_queryset(self):
+        """
+        This view returns a list of all jobs where the currently
+        authenticated user is the pro associated with the accepted bid.
+        """
+        user = self.request.user
+        # The '__' traverses the relationship: from Job -> accepted_bid -> pro
+        return Job.objects.filter(accepted_bid__pro=user).order_by('-created_at')

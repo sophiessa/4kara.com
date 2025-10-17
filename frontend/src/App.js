@@ -11,6 +11,7 @@ import JobCreate from './JobCreate';
 import JobDetail from './JobDetail';
 import MyJobs from './MyJobs';
 import ConversationPage from './ConversationPage';
+import MyWorkPage from './MyWorkPage';
 import './App.css';
 
 function App() {
@@ -41,8 +42,8 @@ function App() {
                     
                     {user && user.is_pro && (
                         <>
-                        {/* A general "Jobs" link for professionals to browse */}
-                        <Button color="inherit" component={RouterLink} to="/jobs">Browse Jobs</Button>
+                            <Button color="inherit" component={RouterLink} to="/jobs">Browse Jobs</Button>
+                            <Button color="inherit" component={RouterLink} to="/my-work">My Work</Button>
                         </>
                     )}
                     
@@ -79,6 +80,7 @@ function App() {
                     <Route path="/jobs/:jobId" element={<JobDetail />} />
                     <Route path="/my-jobs" element={<MyJobs />} />
                     <Route path="/jobs/:jobId/conversation" element={<ConversationPage />} />
+                    <Route path="/my-work" element={<MyWorkPage />} />
                 </Routes>
             </Container>
         </Router>

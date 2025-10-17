@@ -78,8 +78,9 @@ function JobDetail() {
     if (!job) return null; // Or some other placeholder
 
     const isOwner = user && user.id === job.customer;
-
     const isHiredPro = user && job.accepted_bid && user.id === job.accepted_bid.pro;
+
+  
 
     return (
         // Paper provides a clean, elevated surface for the content.
@@ -89,8 +90,8 @@ function JobDetail() {
                     {job.title}
                 </Typography>
                 
-                {/* --- ADD THIS BUTTON --- */}
                 {/* Show button only if job is closed AND user is the owner or the hired pro */}
+                
                 {job.is_completed && (isOwner || isHiredPro) && (
                     <Button 
                         variant="contained" 
@@ -110,8 +111,8 @@ function JobDetail() {
             
             <Divider sx={{ my: 3 }} />
 
-            {/* Bid Form for Professionals */}
-            {user && user.is_pro && (
+            {/* Bid Form for Professionals - ONLY if the job is still open */}
+            {user && user.is_pro && !job.is_completed && (
                 <Box component="form" onSubmit={handleBidSubmit} noValidate sx={{ mb: 4 }}>
                     <Typography variant="h5" component="h2" gutterBottom>Place Your Bid</Typography>
                     <TextField
@@ -136,6 +137,7 @@ function JobDetail() {
                     <Button type="submit" variant="contained" sx={{ mt: 2 }}>Submit Bid</Button>
                 </Box>
             )}
+            
 
             {/* Bids List for the Job Owner */}
             {isOwner && (
