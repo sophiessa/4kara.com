@@ -1,6 +1,9 @@
 import os
+import vertexai
+from vertexai.generative_models import GenerativeModel, Part
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -21,6 +24,19 @@ from rest_framework import status
 from rest_framework import generics, permissions
 from rest_framework.filters import SearchFilter, OrderingFilter 
 from django_filters.rest_framework import DjangoFilterBackend
+
+from dotenv import load_dotenv
+load_dotenv()
+
+
+try:
+    PROJECT_ID = os.environ.get('PROJECT_ID')
+    LOCATION = os.environ.get('LOCATION')
+    vertexai.init(project=PROJECT_ID, location=LOCATION)
+except Exception as e:
+    print(f'Error initializing Vertex AI: {e}')
+    
+
 
 
 class UserCreateView(generics.CreateAPIView):
@@ -307,3 +323,58 @@ class MyAcceptedJobsListView(generics.ListAPIView):
         user = self.request.user
         # The '__' traverses the relationship: from Job -> accepted_bid -> pro
         return Job.objects.filter(accepted_bid__pro=user).order_by('-created_at')
+    
+
+class ChatView(APIView):
+    """
+    Handles chat requests by sending prompts to the Vertex AI Gemini API.
+    """
+    permission_classes = [AllowAny] # Allow anyone (even logged-out users) to chat
+
+    def post(self, request, *args, **kwargs):
+        user_message = request.data.get('message')
+
+        history_raw = request.data.get('history', [])
+        if not user_message:
+            return Response({'error': 'Message is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # --- Configure the Model ---
+            # Use a fast and capable model like gemini-1.5-flash
+            model = GenerativeModel("gemini-2.5-flash")
+
+            gemini_history = []
+            for msg in history_raw:
+                role = "user" if msg.get("sender") == "user" else "model"
+                gemini_history.append({"role": role, "parts": [{"text": msg.get("text", "")}]})
+
+            # --- Construct the Prompt ---
+            # This is where you guide the AI. Be specific!
+            system_instructions = f"""
+            **Persona:** You are "ARA", ARA stands for Appliance Repair Assistant, a helpful AI assistant for 4kara.com, specializing in appliance repair and maintenance advice. Be friendly, empathetic, and knowledgeable.
+
+            **Goal:** Help the user understand their appliance issue. Provide potential causes, simple DIY steps (if safe and appropriate), or suggest the type of professional they should hire through 4kara.com. 
+
+            **Constraints:**
+            - DO NOT provide price estimates or quotes.
+            - DO NOT recommend specific brands or companies.
+            - DO NOT give advice that requires specialized tools or licenses (e.g., major electrical work, gas line repairs). Emphasize safety.
+            - If asked for quotes or specific pros, politely explain you cannot provide that and suggest they "post a job on 4kara.com to get bids from qualified local professionals."
+            - Keep responses concise (2-3 sentences is ideal).
+            - Suggest how to post on 4kara.com
+            """
+
+            chat = model.start_chat(
+                history=gemini_history,
+            )
+
+            # --- Send to Gemini API ---
+            response = chat.send_message(user_message)
+
+            # --- Extract and Return the Text ---
+            ai_response = response.text
+            return Response({'reply': ai_response})
+
+        except Exception as e:
+            print(f"Error calling Vertex AI: {e}") # Log the error for debugging
+            return Response({'error': 'Sorry, I encountered an error. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -16,6 +16,7 @@ htmlcov/
 .tox/
 .cache/
 *.log
+backend/gcp-service-account.json
 
 # Virtual environments
 venv/

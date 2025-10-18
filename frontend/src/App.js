@@ -1,6 +1,6 @@
 // frontend/src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link as RouterLink, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link as RouterLink } from 'react-router-dom';
 // Import the necessary MUI components
 import { AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
 

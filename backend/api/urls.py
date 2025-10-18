@@ -4,6 +4,7 @@ from .views import (
     BidCreateView, LoginView, JobDetailView, 
     AcceptBidView, MyJobsListView, GoogleLoginView, 
     MessageCreateView, MessageListView, MyAcceptedJobsListView,
+    ChatView,
     )
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -22,4 +23,6 @@ urlpatterns = [
     path('jobs/<int:job_id>/messages/create/', MessageCreateView.as_view(), name='message-create'),
 
     path('google/', GoogleLoginView.as_view(), name='google-login'),
+
+    path('chat/', ChatView.as_view(), name='chat'),
 ]

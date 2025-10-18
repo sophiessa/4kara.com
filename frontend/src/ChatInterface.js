@@ -1,70 +1,124 @@
 // frontend/src/ChatInterface.js
 import React, { useState } from 'react';
-import { Box, TextField, IconButton, Paper, Typography } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send'; // Import the send icon
+import { Box, TextField, IconButton, Paper, List, ListItem, ListItemText, CircularProgress, Alert } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import api from './api'; // Import our configured axios instance
 
 function ChatInterface() {
     const [message, setMessage] = useState('');
+    const [conversation, setConversation] = useState([]); // State to hold messages {sender: 'user'/'ai', text: '...'}
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSend = (e) => {
-        e.preventDefault(); // Prevent form submission from reloading the page
-        if (!message.trim()) return; // Don't send empty messages
+    const handleSend = async (e) => {
+        e.preventDefault();
+        const userMessage = message.trim();
+        if (!userMessage) return;
 
-        console.log("Sending message:", message);
-        // --- Placeholder for AI interaction ---
-        // Later, you'll add code here to send 'message' to your AI backend
-        // and display the response.
-        // For now, we just clear the input.
-        // --- End Placeholder ---
-        setMessage(''); // Clear the input field
+        // Add user message to conversation history
+        setConversation(prev => [...prev, { sender: 'user', text: userMessage }]);
+        setMessage(''); // Clear input
+        setLoading(true); // Show loading indicator
+        setError(''); // Clear previous errors
+
+        try {
+            // Send user message to the backend
+            const response = await api.post('/api/chat/', { 
+                message: userMessage,
+                history: currentConversationHistory
+             });
+
+            // Add AI response to conversation history
+            const aiReply = response.data.reply;
+            setConversation(prev => [...prev, { sender: 'ai', text: aiReply }]);
+
+        } catch (err) {
+            console.error("Chat API error:", err.response);
+            setError(err.response?.data?.error || 'Failed to get response from AI.');
+            // Optionally add an error message to the chat
+            setConversation(prev => [...prev, { sender: 'ai', text: 'Sorry, I encountered an error.' }]);
+        } finally {
+            setLoading(false); // Hide loading indicator
+        }
     };
 
     return (
-        // Flexbox container to center content vertically and horizontally
         <Box
             sx={{
-                flexGrow: 1, // Take up remaining vertical space in the Container
+                flexGrow: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center', // Center vertically
-                alignItems: 'center', // Center horizontally
-                textAlign: 'center',
+                justifyContent: 'flex-end', // Align input to bottom
+                alignItems: 'center',
                 p: 2,
+                height: 'calc(80vh - 64px)', // Adjust height based on AppBar/Container padding
             }}
         >
-            <Typography variant="h4" gutterBottom>
-                How can I help you today?
-            </Typography>
+            {/* Display Conversation History */}
+            <Paper elevation={2} sx={{ 
+                width: '100%', 
+                maxWidth: '800px', 
+                flexGrow: 1, 
+                overflow: 'auto', // Make messages scrollable
+                mb: 2, 
+                p: 2 
+            }}>
+                <List>
+                    {conversation.map((msg, index) => (
+                        <ListItem key={index} sx={{ 
+                            justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start'
+                        }}>
+                            <Paper elevation={1} sx={{ 
+                                p: 1.5, 
+                                maxWidth: '75%',
+                                backgroundColor: msg.sender === 'user' ? 'primary.light' : 'grey.200',
+                                wordBreak: 'break-word', // Ensure long words wrap
+                            }}>
+                                <ListItemText primary={msg.text} />
+                            </Paper>
+                        </ListItem>
+                    ))}
+                    {/* Show loading indicator within the chat */}
+                    {loading && (
+                        <ListItem sx={{ justifyContent: 'flex-start' }}>
+                            <CircularProgress size={24} sx={{ ml: 1 }}/>
+                        </ListItem>
+                    )}
+                </List>
+            </Paper>
+            
+            {/* Display API Errors */}
+            {error && <Alert severity="error" sx={{ width: '100%', maxWidth: '800px', mb: 1 }}>{error}</Alert>}
 
-            {/* Paper component to create the chat input area */}
+            {/* Chat Input Area */}
             <Paper
-                component="form" // Use form element for accessibility and Enter key submission
+                component="form"
                 onSubmit={handleSend}
                 sx={{
                     p: '2px 4px',
                     display: 'flex',
                     alignItems: 'center',
-                    width: '100%', // Full width on small screens
-                    maxWidth: '700px', // Max width for larger screens
-                    borderRadius: '28px', // Rounded corners
-                    boxShadow: 3, // Add some shadow
+                    width: '100%',
+                    maxWidth: '800px', // Consistent width
+                    borderRadius: '28px',
+                    boxShadow: 3,
                 }}
             >
                 <TextField
-                    sx={{ ml: 1, flex: 1, '& .MuiOutlinedInput-notchedOutline': { border: 'none' } }} // Remove border
-                    placeholder="Ask about home repairs, maintenance, or improvements..."
+                    sx={{ ml: 1, flex: 1, '& .MuiOutlinedInput-notchedOutline': { border: 'none' } }}
+                    placeholder="Ask about home repairs..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     variant="outlined"
                     fullWidth
                     multiline
-                    maxRows={5} // Allow some vertical expansion
+                    maxRows={5}
+                    disabled={loading} // Disable input while loading
                 />
-                <IconButton color="primary" sx={{ p: '10px' }} aria-label="send message" type="submit">
+                <IconButton color="primary" sx={{ p: '10px' }} aria-label="send message" type="submit" disabled={loading}>
                     <SendIcon />
                 </IconButton>
             </Paper>
-            
         </Box>
     );
 }
