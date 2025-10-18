@@ -6,7 +6,7 @@ from .views import (
     MessageCreateView, MessageListView, MyAcceptedJobsListView,
     ChatView, MyProProfileView, PublicProProfileView
     )
-from rest_framework.authtoken.views import obtain_auth_token
+
 
 urlpatterns = [
     path('users/register/', UserCreateView.as_view(), name='user-register'),

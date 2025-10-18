@@ -13,6 +13,7 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=20, blank=True)
     
+
 class ProProfile(models.Model):
     """
     Stores additional information for a professional user.
@@ -60,6 +61,7 @@ class Job(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class Bid(models.Model):
     """

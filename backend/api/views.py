@@ -8,7 +8,7 @@ from vertexai.generative_models import GenerativeModel, Part, Content
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -19,6 +19,7 @@ from django.contrib.auth import authenticate
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -30,8 +31,6 @@ except Exception as e:
     print(f'Error initializing Vertex AI: {e}')
     
 
-
-
 class UserCreateView(generics.CreateAPIView):
     """
     A view for creating new users.
@@ -42,6 +41,7 @@ class UserCreateView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     authentication_classes = []
     
+
 class MyProProfileView(generics.RetrieveUpdateAPIView):
     """
     Allows a professional user to retrieve and update their own profile.
@@ -50,19 +50,18 @@ class MyProProfileView(generics.RetrieveUpdateAPIView):
     patch: Partially update your profile.
     """
     serializer_class = ProProfileSerializer
-    permission_classes = [IsProfessionalUser] # Only professionals can access
+    permission_classes = [IsProfessionalUser]
 
     def get_object(self):
-        # Retrieve or create the profile for the logged-in user
         profile, created = ProProfile.objects.get_or_create(user=self.request.user)
         return profile
 
-    # Optional: Add a message on successful update
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
         if response.status_code == status.HTTP_200_OK:
             return Response({"message": "Profile updated successfully.", "data": response.data})
         return response
+
 
 class PublicProProfileView(generics.RetrieveAPIView):
     """
@@ -70,24 +69,22 @@ class PublicProProfileView(generics.RetrieveAPIView):
     get: Retrieve profile by user ID.
     """
     serializer_class = ProProfileSerializer
-    permission_classes = [permissions.AllowAny] # Anyone can view a public profile
+    permission_classes = [AllowAny]
     queryset = ProProfile.objects.all()
-    lookup_field = 'user_id' # Specify that we look up by the 'user_id' field in the URL
+    lookup_field = 'user_id'
+
 
 class JobCreateView(generics.CreateAPIView):
+    """
+    A view for customers to create new jobs.
+    """
     queryset = Job.objects.all()
     serializer_class = JobSerializer
-    # This ensures only authenticated (logged-in) users can access this endpoint.
     permission_classes = [IsAuthenticated]
 
-
     def perform_create(self, serializer):
-        # When a new job is created, this method is called.
-        # We automatically set the job's 'customer' to the currently logged-in user.
         serializer.save(customer=self.request.user)
 
-
-    
 
 class JobListView(generics.ListAPIView):
     """
@@ -96,7 +93,6 @@ class JobListView(generics.ListAPIView):
     """
     serializer_class = JobSerializer
     permission_classes = [IsProfessionalUser]
-    
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['zip_code', 'state'] # Allow filtering by these exact fields
@@ -111,26 +107,19 @@ class JobListView(generics.ListAPIView):
         return Job.objects.filter(is_completed=False)
 
 
-
 class BidCreateView(generics.CreateAPIView):
     """
     A view for professionals to create a bid on a specific job.
     """
     serializer_class = BidSerializer
-    permission_classes = [IsProfessionalUser] # Only pros can bid.
+    permission_classes = [IsProfessionalUser]
 
     def perform_create(self, serializer):
         """
         Associate the bid with the job from the URL and the user from the request.
         """
-        # Get the job_id from the URL's keyword arguments.
         job_id = self.kwargs['job_id']
-        # Use get_object_or_404 to fetch the job, which handles the "not found" case.
         job = get_object_or_404(Job, id=job_id)
-
-        # You might add logic here to prevent bidding on your own job, for example.
-        
-        # Save the bid, associating it with the job and the authenticated pro user.
         serializer.save(job=job, pro=self.request.user)
 
 
@@ -138,8 +127,7 @@ class LoginView(APIView):
     """
     Custom login view to return user data along with the token.
     """
-    # This view should be public.
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
@@ -147,9 +135,7 @@ class LoginView(APIView):
         password = request.data.get("password")
         user = authenticate(username=username, password=password)
         if user is not None:
-            # User is valid, get or create a token.
             token, created = Token.objects.get_or_create(user=user)
-            # Serialize the user data you want to return.
             user_data = {
                 "id": user.id,
                 "username": user.username,
@@ -159,7 +145,6 @@ class LoginView(APIView):
             }
             return Response({"token": token.key, "user": user_data})
         else:
-            # Invalid credentials.
             return Response({"error": "Invalid Credentials"}, status=400)
 
 
@@ -169,7 +154,6 @@ class JobDetailView(generics.RetrieveAPIView):
     """
     queryset = Job.objects.all()
     serializer_class = JobSerializer
-    # Anyone who is logged in can view the details of a job.
     permission_classes = [IsAuthenticated]
 
 
@@ -180,20 +164,17 @@ class AcceptBidView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, bid_id, *args, **kwargs):
-        # Get the bid object, or return 404 if it doesn't exist
         bid = get_object_or_404(Bid, id=bid_id)
         job = bid.job
 
-        # Security Check: Ensure the user making the request owns the job.
         if job.customer != request.user:
             return Response(
                 {"error": "You do not have permission to accept this bid."}, 
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Update the job to accept the bid
         job.accepted_bid = bid
-        job.is_completed = True # Mark the job as completed/closed for bidding
+        job.is_completed = True
         job.save()
 
         return Response(
@@ -201,12 +182,13 @@ class AcceptBidView(APIView):
             status=status.HTTP_200_OK
         )
 
+
 class MyJobsListView(generics.ListAPIView):
     """
     A view for a customer to list only the jobs they have created.
     """
     serializer_class = JobSerializer
-    permission_classes = [IsAuthenticated] # Must be logged in
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         """
@@ -214,11 +196,9 @@ class MyJobsListView(generics.ListAPIView):
         authenticated user.
         """
         user = self.request.user
-        # We filter the Job objects to only those where the customer is the current user.
         return Job.objects.filter(customer=user).order_by('-created_at')
 
 
-# Replace your old GoogleLoginView with this one
 class GoogleLoginView(APIView):
     """
     Custom view for Google OAuth login.
@@ -230,14 +210,11 @@ class GoogleLoginView(APIView):
 
     def post(self, request, *args, **kwargs):
         token = request.data.get('id_token')
-        
+
         if not token:
             return Response({'error': 'ID token is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # 1. VERIFY THE TOKEN
-            # This line sends the token to Google's servers to check if it's valid.
-            # It also checks that the token was issued for YOUR application.
             idinfo = google_id_token.verify_oauth2_token(
                 token, 
                 google_requests.Request(), 
@@ -246,27 +223,20 @@ class GoogleLoginView(APIView):
 
             print(os.environ.get('GOOGLE_OAUTH_CLIENT_ID'))
             
-            # 2. GET USER INFO FROM VERIFIED TOKEN
-            # If verify_oauth2_token doesn't raise an error, the token is valid.
-            # We can now safely trust the information in idinfo.
             email = idinfo['email']
             full_name = idinfo.get('name', '')
             
-            # 3. CREATE OR GET USER
-            # Now we find the user with that verified email or create them.
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
-                    'username': email, # Use email as username for simplicity
+                    'username': email,
                     'full_name': full_name,
-                    'is_pro': False # Default new users to customer
+                    'is_pro': False
                 }
             )
             
-            # 4. ISSUE YOUR APP'S TOKEN
             drf_token, created = Token.objects.get_or_create(user=user)
             
-            # Prepare user data to send back to the frontend
             user_data = {
                 "id": user.id,
                 "username": user.username,
@@ -281,7 +251,6 @@ class GoogleLoginView(APIView):
             })
             
         except ValueError as e:
-            # This error is raised if the token is invalid
             return Response({'error': 'Invalid Google token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': 'An unexpected error occurred', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -300,13 +269,11 @@ class MessageListView(generics.ListAPIView):
         job = get_object_or_404(Job, id=job_id)
         user = self.request.user
 
-        # Security check: Ensure the user is either the customer or the hired pro.
-        # The job must have an accepted bid to have a conversation.
         if job.accepted_bid and (user == job.customer or user == job.accepted_bid.pro):
             return Message.objects.filter(job=job).order_by('timestamp')
-        
-        # If the user is not a participant, return an empty list.
+
         return Message.objects.none()
+
 
 class MessageCreateView(generics.CreateAPIView):
     """
@@ -320,23 +287,22 @@ class MessageCreateView(generics.CreateAPIView):
         job = get_object_or_404(Job, id=job_id)
         user = self.request.user
 
-        # Determine the receiver of the message.
         if user == job.customer:
             receiver = job.accepted_bid.pro
         elif job.accepted_bid and user == job.accepted_bid.pro:
             receiver = job.customer
         else:
-            # If the user is not a participant, block the message creation.
             raise serializer.ValidationError("You do not have permission to post messages for this job.")
 
         serializer.save(job=job, sender=user, receiver=receiver)
+
 
 class MyAcceptedJobsListView(generics.ListAPIView):
     """
     A view for a professional to list the jobs they have been hired for.
     """
     serializer_class = JobSerializer
-    permission_classes = [IsProfessionalUser] # Only pros can access this
+    permission_classes = [IsProfessionalUser]
 
     def get_queryset(self):
         """
@@ -344,7 +310,6 @@ class MyAcceptedJobsListView(generics.ListAPIView):
         authenticated user is the pro associated with the accepted bid.
         """
         user = self.request.user
-        # The '__' traverses the relationship: from Job -> accepted_bid -> pro
         return Job.objects.filter(accepted_bid__pro=user).order_by('-created_at')
     
 
@@ -352,7 +317,7 @@ class ChatView(APIView):
     """
     Handles chat requests by sending prompts to the Vertex AI Gemini API.
     """
-    permission_classes = [AllowAny] # Allow anyone (even logged-out users) to chat
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         user_message = request.data.get('message')
@@ -362,21 +327,15 @@ class ChatView(APIView):
             return Response({'error': 'Message is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # --- Configure the Model ---
-            # Use a fast and capable model like gemini-1.5-flash
             model = GenerativeModel("gemini-2.5-flash")
 
             gemini_history = []
             for msg in history_raw:
                 role = "user" if msg.get("sender") == "user" else "model"
-                # Create a Part object containing the text
                 part = Part.from_text(msg.get("text", ""))
-                # Create a Content object with the role and part
                 content = Content(parts=[part], role=role)
                 gemini_history.append(content)
 
-            # --- Construct the Prompt ---
-            # This is where you guide the AI. Be specific!
             system_instruction = f"""
             You are "ARA", ARA stands for Appliance Repair Assistant, a helpful AI assistant for 4kara.com, specializing in appliance repair and maintenance advice. Be friendly, empathetic, and knowledgeable.
 
@@ -393,17 +352,14 @@ class ChatView(APIView):
             chat = model.start_chat(history=gemini_history)
 
             effective_message = user_message
-            if not gemini_history: # If it's the first message, include instructions implicitly
+            if not gemini_history:
                  effective_message = "\n\nUser message: \"" + user_message + "\"\nAssistant response: \n" + system_instruction
 
-
-            # Send the message using the chat session
             response = chat.send_message(effective_message)
 
-            # --- Extract and Return the Text ---
             ai_response = response.text
             return Response({'reply': ai_response})
 
         except Exception as e:
-            print(f"Error calling Vertex AI: {e}") # Log the error for debugging
+            print(f"Error calling Vertex AI: {e}")
             return Response({'error': 'Sorry, I encountered an error. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
