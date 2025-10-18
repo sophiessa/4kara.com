@@ -35,15 +35,13 @@ DEBUG = os.environ.get('DEBUG') == 'True'
 ALLOWED_HOSTS = []
 DEV_HOST = os.environ.get('DEV_ALLOWED_HOST')
 if DEV_HOST:
-    DEV_HOST = [ip.strip() for ip in DEV_HOST.split(',') if ip.split()]
-    ALLOWED_HOSTS.append(DEV_HOST)
+    DEV_HOST = [ALLOWED_HOSTS.append(ip) for ip in DEV_HOST.split(',') if ip.split()]
 
 PROD_HOST = os.environ.get('PROD_ALLOWED_HOST')
 if PROD_HOST:
-    PROD_HOST = [ip.strip() for ip in PROD_HOST.split(',') if ip.strip()]
-    ALLOWED_HOSTS.append(PROD_HOST)
+    PROD_HOST = [ALLOWED_HOSTS.append(ip) for ip in PROD_HOST.split(',') if ip.strip()]
 
-
+print(ALLOWED_HOSTS)
 
 if DEBUG:
     ALLOWED_HOSTS.append('127.0.0.1')
