@@ -34,10 +34,12 @@ DEBUG = os.environ.get('DEBUG') == 'True'
 
 ALLOWED_HOSTS = []
 DEV_HOST = os.environ.get('DEV_ALLOWED_HOST')
+DEV_HOST = [ip.strip() for ip in DEV_HOST.split(',') if ip.split()]
 if DEV_HOST:
     ALLOWED_HOSTS.append(DEV_HOST)
 
 PROD_HOST = os.environ.get('PROD_ALLOWED_HOST')
+PROD_HOST = [ip.strip() for ip in PROD_HOST.split(',') if ip.strip()]
 if PROD_HOST:
     ALLOWED_HOSTS.append(PROD_HOST)
 

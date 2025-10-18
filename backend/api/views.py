@@ -288,7 +288,7 @@ class MessageCreateView(generics.CreateAPIView):
             receiver = job.customer
         else:
             # If the user is not a participant, block the message creation.
-            raise serializers.ValidationError("You do not have permission to post messages for this job.")
+            raise serializer.ValidationError("You do not have permission to post messages for this job.")
 
         serializer.save(job=job, sender=user, receiver=receiver)
 
