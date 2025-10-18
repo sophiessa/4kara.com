@@ -37,6 +37,10 @@ DEV_HOST = os.environ.get('DEV_ALLOWED_HOST')
 if DEV_HOST:
     ALLOWED_HOSTS.append(DEV_HOST)
 
+PROD_HOST = os.environ.get('PROD_ALLOWED_HOST')
+if PROD_HOST:
+    ALLOWED_HOSTS.append(PROD_HOST)
+
 
 
 if DEBUG:
