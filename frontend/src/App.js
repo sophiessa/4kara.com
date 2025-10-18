@@ -12,6 +12,7 @@ import JobDetail from './JobDetail';
 import MyJobs from './MyJobs';
 import ConversationPage from './ConversationPage';
 import MyWorkPage from './MyWorkPage';
+import ChatInterface from './ChatInterface';
 import './App.css';
 
 function App() {
@@ -72,7 +73,7 @@ function App() {
             {/* Container provides consistent padding and centering for the page content. */}
             <Container component="main" sx={{ mt: 4, mb: 4 }}>
                 <Routes>
-                    <Route path="/" element={token ? <Navigate to="/jobs" /> : <Navigate to="/login" />} />
+                    <Route path="/" element={<ChatInterface />} />
                     <Route path="/jobs" element={<JobList />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Registration />} />
