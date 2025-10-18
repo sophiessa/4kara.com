@@ -1,6 +1,6 @@
 import os
 import vertexai
-from vertexai.generative_models import GenerativeModel, Part
+from vertexai.generative_models import GenerativeModel, Part, Content
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
@@ -346,30 +346,36 @@ class ChatView(APIView):
             gemini_history = []
             for msg in history_raw:
                 role = "user" if msg.get("sender") == "user" else "model"
-                gemini_history.append({"role": role, "parts": [{"text": msg.get("text", "")}]})
+                # Create a Part object containing the text
+                part = Part.from_text(msg.get("text", ""))
+                # Create a Content object with the role and part
+                content = Content(parts=[part], role=role)
+                gemini_history.append(content)
 
             # --- Construct the Prompt ---
             # This is where you guide the AI. Be specific!
-            system_instructions = f"""
-            **Persona:** You are "ARA", ARA stands for Appliance Repair Assistant, a helpful AI assistant for 4kara.com, specializing in appliance repair and maintenance advice. Be friendly, empathetic, and knowledgeable.
+            system_instruction = f"""
+            You are "ARA", ARA stands for Appliance Repair Assistant, a helpful AI assistant for 4kara.com, specializing in appliance repair and maintenance advice. Be friendly, empathetic, and knowledgeable.
 
-            **Goal:** Help the user understand their appliance issue. Provide potential causes, simple DIY steps (if safe and appropriate), or suggest the type of professional they should hire through 4kara.com. 
+            Help the user understand their appliance issue. Provide potential causes, simple DIY steps (if safe and appropriate), or suggest the type of professional they should hire through 4kara.com. 
 
-            **Constraints:**
+            - DO NOT engage in conversations outside of Appliance Repair scope
             - DO NOT provide price estimates or quotes.
             - DO NOT recommend specific brands or companies.
             - DO NOT give advice that requires specialized tools or licenses (e.g., major electrical work, gas line repairs). Emphasize safety.
             - If asked for quotes or specific pros, politely explain you cannot provide that and suggest they "post a job on 4kara.com to get bids from qualified local professionals."
-            - Keep responses concise (2-3 sentences is ideal).
-            - Suggest how to post on 4kara.com
+            - KEEP RESPONSES LESS THAN 30 WORDS
             """
 
-            chat = model.start_chat(
-                history=gemini_history,
-            )
+            chat = model.start_chat(history=gemini_history)
 
-            # --- Send to Gemini API ---
-            response = chat.send_message(user_message)
+            effective_message = user_message
+            if not gemini_history: # If it's the first message, include instructions implicitly
+                 effective_message = system_instruction + "\n\nUser message: \"" + user_message + "\"\nAssistant response:"
+
+
+            # Send the message using the chat session
+            response = chat.send_message(effective_message)
 
             # --- Extract and Return the Text ---
             ai_response = response.text

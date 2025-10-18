@@ -1,6 +1,7 @@
 // frontend/src/ChatInterface.js
 import React, { useState } from 'react';
-import { Box, TextField, IconButton, Paper, List, ListItem, ListItemText, CircularProgress, Alert } from '@mui/material';
+import { Box, TextField, IconButton, Paper, List, ListItem, ListItemText, CircularProgress, Alert, Typography } from '@mui/material';
+import ReactMarkdown from 'react-markdown';
 import SendIcon from '@mui/icons-material/Send';
 import api from './api'; // Import our configured axios instance
 
@@ -10,10 +11,20 @@ function ChatInterface() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const handleKeyDown = (event) => {
+        // Check if Enter was pressed WITHOUT the Shift key
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Prevent adding a newline
+            handleSend(event); // Trigger the send function
+        }
+    };
+
     const handleSend = async (e) => {
         e.preventDefault();
         const userMessage = message.trim();
         if (!userMessage) return;
+
+        const currentConversationHistory = [...conversation];
 
         // Add user message to conversation history
         setConversation(prev => [...prev, { sender: 'user', text: userMessage }]);
@@ -48,13 +59,20 @@ function ChatInterface() {
                 flexGrow: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'flex-end', // Align input to bottom
+                justifyContent: conversation.length > 0 ? 'flex-end' : 'center',
                 alignItems: 'center',
                 p: 2,
-                height: 'calc(80vh - 64px)', // Adjust height based on AppBar/Container padding
+                height: 'calc(80vh - 64px)', // Adjust as needed
+                position: 'relative', // Keep for buttons
             }}
         >
+            {conversation.length === 0 && (
+             <Typography variant="h4" gutterBottom sx={{ mt: 8 }}>
+                How can I help you today?
+             </Typography>
+            )}
             {/* Display Conversation History */}
+            {conversation.length > 0 && (
             <Paper elevation={2} sx={{ 
                 width: '100%', 
                 maxWidth: '800px', 
@@ -74,7 +92,16 @@ function ChatInterface() {
                                 backgroundColor: msg.sender === 'user' ? 'primary.light' : 'grey.200',
                                 wordBreak: 'break-word', // Ensure long words wrap
                             }}>
-                                <ListItemText primary={msg.text} />
+                                {msg.sender === 'ai' ? (
+                                    <ReactMarkdown components={{ // Optional: Use MUI Typography for paragraphs
+                                        p: ({node, ...props}) => <Typography variant="body1" {...props} />
+                                    }}>
+                                        {msg.text}
+                                    </ReactMarkdown>
+                                ) : (
+                                    // Otherwise, just display user text normally
+                                    <ListItemText primary={msg.text} />
+                                )}
                             </Paper>
                         </ListItem>
                     ))}
@@ -86,6 +113,7 @@ function ChatInterface() {
                     )}
                 </List>
             </Paper>
+            )}
             
             {/* Display API Errors */}
             {error && <Alert severity="error" sx={{ width: '100%', maxWidth: '800px', mb: 1 }}>{error}</Alert>}
@@ -113,7 +141,8 @@ function ChatInterface() {
                     fullWidth
                     multiline
                     maxRows={5}
-                    disabled={loading} // Disable input while loading
+                    disabled={loading} 
+                    onKeyDown={handleKeyDown}
                 />
                 <IconButton color="primary" sx={{ p: '10px' }} aria-label="send message" type="submit" disabled={loading}>
                     <SendIcon />
