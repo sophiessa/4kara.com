@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Job, Bid, Message
+from .models import User, Job, Bid, Message, ProProfile
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +21,29 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+    
+class ProProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the ProProfile model.
+    """
+    # Make the user field read-only, as it's set implicitly
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    # Include user's full name for display purposes
+    full_name = serializers.CharField(source='user.full_name', read_only=True)
+
+    class Meta:
+        model = ProProfile
+        # List all the fields you want to expose via the API
+        fields = [
+            'id',
+            'user',
+            'full_name', # Added from related user
+            'bio',
+            'service_area_zip_codes',
+            'profile_picture_url',
+        ]
+        # user field shouldn't be directly editable via this serializer
+        read_only_fields = ['user', 'full_name']
 
 class BidSerializer(serializers.ModelSerializer):
     class Meta:

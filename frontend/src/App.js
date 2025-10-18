@@ -13,6 +13,9 @@ import MyJobs from './MyJobs';
 import ConversationPage from './ConversationPage';
 import MyWorkPage from './MyWorkPage';
 import ChatInterface from './ChatInterface';
+import EditProProfile from './EditProProfile';
+import PublicProProfile from './PublicProProfile';
+
 import './App.css';
 
 function App() {
@@ -31,20 +34,21 @@ function App() {
             <AppBar position="static">
                 {/* Toolbar handles the horizontal layout of items */}
                 <Toolbar>
-                    {/* Typography for the site title. The sx prop is for custom styling. */}
-                    {user && (
-                        <Typography sx={{ mr: 2 }}>Welcome, {user.full_name}</Typography>
-                    )}
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
                             4KARA LLC
                         </RouterLink>
                     </Typography>
+                    {/* Typography for the site title. The sx prop is for custom styling. */}
+                    {user && (
+                        <Typography sx={{ mr: 2 }}>Welcome {user.full_name}</Typography>
+                    )}
                     
                     {user && user.is_pro && (
                         <>
                             <Button color="inherit" component={RouterLink} to="/jobs">Browse Jobs</Button>
                             <Button color="inherit" component={RouterLink} to="/my-work">My Work</Button>
+                            <Button color="inherit" component={RouterLink} to="/profile/edit">My Profile</Button>
                         </>
                     )}
                     
@@ -82,6 +86,8 @@ function App() {
                     <Route path="/my-jobs" element={<MyJobs />} />
                     <Route path="/jobs/:jobId/conversation" element={<ConversationPage />} />
                     <Route path="/my-work" element={<MyWorkPage />} />
+                    <Route path="/profile/edit" element={<EditProProfile />} />
+                    <Route path="/profile/:userId" element={<PublicProProfile />} />
                 </Routes>
             </Container>
         </Router>

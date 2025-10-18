@@ -154,8 +154,21 @@ function JobDetail() {
                                     sx={job.accepted_bid === bid.id ? { backgroundColor: 'action.selected' } : {}}
                                 >
                                     <ListItemText
-                                        primary={`$${bid.amount}`}
-                                        secondary={bid.details}
+                                        primary={
+                                            // Make the name a link to the pro's profile
+                                            <Typography variant="h6" component={RouterLink} to={`/profile/${bid.pro}`} sx={{ textDecoration: 'none', color: 'primary.main' }}>
+                                                Bid by Pro #{bid.pro} {/* We'll add name later */}
+                                            </Typography>
+                                        }
+                                        secondary={
+                                            <>
+                                                <Typography component="span" variant="body1" color="text.primary">
+                                                    Amount: ${bid.amount}
+                                                </Typography>
+                                                <br />
+                                                {bid.details}
+                                            </>
+                                        }
                                     />
                                     {/* Show the Accept button ONLY if the job is not yet completed */}
                                     {!job.is_completed && (

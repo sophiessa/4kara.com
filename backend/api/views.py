@@ -1,30 +1,23 @@
 import os
+from .models import User, ProProfile, Job, Bid, Message
+from .serializers import UserSerializer, ProProfileSerializer, JobSerializer, BidSerializer, MessageSerializer
+from .permissions import IsProfessionalUser
+
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part, Content
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
+from rest_framework import status, generics, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
-
-from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions
-from .models import User, Job, Bid, Message
-from .serializers import UserSerializer, JobSerializer, BidSerializer, MessageSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import IsProfessionalUser
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
-from rest_framework import status
-from rest_framework import generics, permissions
-from rest_framework.filters import SearchFilter, OrderingFilter 
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
+from django.contrib.auth import authenticate
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -49,7 +42,37 @@ class UserCreateView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     authentication_classes = []
     
+class MyProProfileView(generics.RetrieveUpdateAPIView):
+    """
+    Allows a professional user to retrieve and update their own profile.
+    get: Retrieve your profile.
+    put: Update your profile.
+    patch: Partially update your profile.
+    """
+    serializer_class = ProProfileSerializer
+    permission_classes = [IsProfessionalUser] # Only professionals can access
 
+    def get_object(self):
+        # Retrieve or create the profile for the logged-in user
+        profile, created = ProProfile.objects.get_or_create(user=self.request.user)
+        return profile
+
+    # Optional: Add a message on successful update
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            return Response({"message": "Profile updated successfully.", "data": response.data})
+        return response
+
+class PublicProProfileView(generics.RetrieveAPIView):
+    """
+    Allows anyone to view a specific professional's profile.
+    get: Retrieve profile by user ID.
+    """
+    serializer_class = ProProfileSerializer
+    permission_classes = [permissions.AllowAny] # Anyone can view a public profile
+    queryset = ProProfile.objects.all()
+    lookup_field = 'user_id' # Specify that we look up by the 'user_id' field in the URL
 
 class JobCreateView(generics.CreateAPIView):
     queryset = Job.objects.all()

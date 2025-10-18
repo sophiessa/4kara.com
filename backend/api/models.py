@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 # We are extending Django's built-in User model to add a user type.
 class User(AbstractUser):
@@ -12,6 +13,26 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=20, blank=True)
     
+class ProProfile(models.Model):
+    """
+    Stores additional information for a professional user.
+    """
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='pro_profile' 
+    )
+    bio = models.TextField(blank=True)
+    service_area_zip_codes = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Comma-separated list of zip codes served (e.g., 75201,75205)"
+    )
+    profile_picture_url = models.URLField(blank=True)
+
+    def __str__(self):
+        # Update __str__ method too
+        return f"{self.user.username}'s Pro Profile" 
 
 
 class Job(models.Model):

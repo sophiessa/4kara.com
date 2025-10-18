@@ -41,8 +41,6 @@ PROD_HOST = os.environ.get('PROD_ALLOWED_HOST')
 if PROD_HOST:
     PROD_HOST = [ALLOWED_HOSTS.append(ip) for ip in PROD_HOST.split(',') if ip.strip()]
 
-print(ALLOWED_HOSTS)
-
 if DEBUG:
     ALLOWED_HOSTS.append('127.0.0.1')
     ALLOWED_HOSTS.append('localhost')
