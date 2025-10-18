@@ -8,7 +8,7 @@ from vertexai.generative_models import GenerativeModel, Part, Content
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
-from rest_framework import status, generics
+from rest_framework import status, generics, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -292,7 +292,7 @@ class MessageCreateView(generics.CreateAPIView):
         elif job.accepted_bid and user == job.accepted_bid.pro:
             receiver = job.customer
         else:
-            raise serializer.ValidationError("You do not have permission to post messages for this job.")
+            raise serializers.ValidationError("You do not have permission to post messages for this job.")
 
         serializer.save(job=job, sender=user, receiver=receiver)
 
