@@ -394,7 +394,7 @@ class ChatView(APIView):
 
             effective_message = user_message
             if not gemini_history: # If it's the first message, include instructions implicitly
-                 effective_message = system_instruction + "\n\nUser message: \"" + user_message + "\"\nAssistant response:"
+                 effective_message = "\n\nUser message: \"" + user_message + "\"\nAssistant response: \n" + system_instruction
 
 
             # Send the message using the chat session
