@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
-# We are extending Django's built-in User model to add a user type.
+
 class User(AbstractUser):
     """
     Custom User Model
@@ -31,7 +31,6 @@ class ProProfile(models.Model):
     profile_picture_url = models.URLField(blank=True)
 
     def __str__(self):
-        # Update __str__ method too
         return f"{self.user.username}'s Pro Profile" 
 
 
@@ -40,8 +39,6 @@ class Job(models.Model):
     Job Model
     This model stores all the job requests posted by customers.
     """
-    # The customer who posted the job. It's linked to our User model.
-    # If a user is deleted, all their jobs will be deleted too (CASCADE).
     customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='jobs')
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -61,7 +58,6 @@ class Job(models.Model):
         related_name='accepted_for_job'
     )
 
-
     def __str__(self):
         return self.title
 
@@ -70,9 +66,7 @@ class Bid(models.Model):
     Bid Model
     This model stores the bids made by Professionals on a Job.
     """
-    # The job the bid is for.
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='bids')
-    # The professional who made the bid.
     pro = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bids')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     details = models.TextField(help_text="Details about the bid, like scope of work.")
