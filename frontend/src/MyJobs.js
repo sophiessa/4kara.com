@@ -1,8 +1,9 @@
 // frontend/src/MyJobs.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link as RouterLink } from 'react-router-dom';
 import { Grid, Card, CardActionArea, CardContent, Typography, Alert, CircularProgress, Box } from '@mui/material';
+import api from './api';
+
 
 function MyJobs() {
     const [jobs, setJobs] = useState([]);
@@ -19,7 +20,7 @@ function MyJobs() {
             }
             try {
                 // Call the new endpoint we just created
-                const response = await axios.get(`${window.location.protocol}//${window.location.hostname}:8000/api/my-jobs/`, {
+                const response = await api.get('/api/my-jobs/', {
                     headers: { 'Authorization': `Token ${authToken}` }
                 });
                 setJobs(response.data);

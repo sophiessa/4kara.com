@@ -1,7 +1,7 @@
 // frontend/src/JobDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
-import axios from 'axios';
+import api from './api';
 
 // Import a larger set of MUI components for layout and display
 import { Paper, Typography, Box, Divider, TextField, Button, List, ListItem, ListItemText, Alert, CircularProgress } from '@mui/material';
@@ -26,7 +26,7 @@ function JobDetail() {
             return;
         }
         try {
-            await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/bids/${bidId}/accept/`, {}, {
+            await api.post('/api/bids/${bidId}/accept/' , {}, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             // Reload to see the updated job status
@@ -45,7 +45,7 @@ function JobDetail() {
         }
         const fetchJob = async () => {
             try {
-                const response = await axios.get(`${window.location.protocol}//${window.location.hostname}:8000/api/jobs/${jobId}/`, {
+                const response = await api.get('/api/jobs/${jobId}/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setJob(response.data);
@@ -62,7 +62,7 @@ function JobDetail() {
         // ... (handleBidSubmit logic is the same)
         e.preventDefault();
         try {
-            await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/jobs/${jobId}/bid/`, { amount: bidAmount, details: bidDetails }, {
+            await api.post('/api/jobs/${jobId}/bid/', { amount: bidAmount, details: bidDetails }, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             window.location.reload();

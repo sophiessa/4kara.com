@@ -1,7 +1,7 @@
 // frontend/src/Login.js
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import api from './api';
 
 // Import MUI components
 import { Container, Box, TextField, Button, Typography, Alert, Divider } from '@mui/material';
@@ -19,7 +19,7 @@ function Login() {
         setError('');
 
         try {
-            const response = await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/users/login/`, {
+            const response = await api.post('/api/users/login/', {
                 username,
                 password,
             });

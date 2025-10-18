@@ -1,7 +1,7 @@
 // frontend/src/JobCreate.js
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import api from './api';
 
 import { Container, Box, TextField, Button, Typography, Alert } from '@mui/material';
 
@@ -26,7 +26,7 @@ function JobCreate() {
         }
 
         try {
-            await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/jobs/create/`, {
+            await api.post('/api/jobs/create/', {
                 title,
                 description,
                 street_address: streetAddress,

@@ -39,7 +39,7 @@ function JobList() {
                 // Make the API call with the parameters
                 const response = await api.get('/api/jobs/', { 
                     headers: { 'Authorization': `Token ${authToken}` },
-                    params: params // Axios will append these to the URL
+                    params: params 
                 });
                 
                 setJobs(response.data);

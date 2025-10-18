@@ -1,8 +1,8 @@
 // frontend/src/Registration.js
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Container, Box, TextField, Button, Typography, Alert, FormControlLabel, Checkbox } from '@mui/material';
+import api from './api';
 
 function Registration() {
     // State for each form field
@@ -31,7 +31,7 @@ function Registration() {
 
         try {
             // Post the new user data to the registration endpoint
-            await axios.post(`${window.location.protocol}//${window.location.hostname}:8000/api/users/register/`, userData);
+            await api.post('/api/users/register/', userData);
             
             // On success, redirect the user to the login page
             navigate('/login');
