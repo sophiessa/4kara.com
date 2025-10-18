@@ -26,7 +26,7 @@ function JobDetail() {
             return;
         }
         try {
-            await api.post('/api/bids/${bidId}/accept/' , {}, {
+            await api.post(`/api/bids/${bidId}/accept/`, {}, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             // Reload to see the updated job status
@@ -45,7 +45,7 @@ function JobDetail() {
         }
         const fetchJob = async () => {
             try {
-                const response = await api.get('/api/jobs/${jobId}/', {
+                const response = await api.get(`/api/jobs/${jobId}/`, {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setJob(response.data);
@@ -62,7 +62,7 @@ function JobDetail() {
         // ... (handleBidSubmit logic is the same)
         e.preventDefault();
         try {
-            await api.post('/api/jobs/${jobId}/bid/', { amount: bidAmount, details: bidDetails }, {
+            await api.post(`/api/jobs/${jobId}/bid/`, { amount: bidAmount, details: bidDetails }, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             window.location.reload();
