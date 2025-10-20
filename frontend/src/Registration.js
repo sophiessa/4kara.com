@@ -1,17 +1,14 @@
-// frontend/src/Registration.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Box, TextField, Button, Typography, Alert, FormControlLabel, Checkbox } from '@mui/material';
 import api from './api';
 
 function Registration() {
-    // State for each form field
-    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [password1, setPassword1] = useState('');
+    const [password2, setPassword2] = useState('');
     const [fullName, setFullName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    // The is_pro flag defaults to false (a Customer)
     const [isPro, setIsPro] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -20,25 +17,26 @@ function Registration() {
         e.preventDefault();
         setError('');
 
+        if (password1 !== password2) {
+            setError("Passwords do not match.");
+            return;
+        }
+
         const userData = {
-            username,
             email,
-            password,
-            full_name: fullName,
+            full_name: fullName, 
             phone_number: phoneNumber,
+            password1: password1, 
+            password2: password2,
             is_pro: isPro,
         };
 
         try {
-            // Post the new user data to the registration endpoint
             await api.post('/api/users/register/', userData);
-            
-            // On success, redirect the user to the login page
             navigate('/login');
 
         } catch (err) {
             console.error('Registration failed:', err.response?.data || err.message);
-            // Concatenate error messages from the backend for display
             const errorData = err.response?.data || {};
             const errorMessages = Object.keys(errorData).map(key => `${key}: ${Array.isArray(errorData[key]) ? errorData[key].join(' ') : errorData[key]}`).join('; ');
             setError(`Registration failed: ${errorMessages}`);
@@ -61,18 +59,6 @@ function Registration() {
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
                     <TextField
                         margin="normal"
-                        required
-                        fullWidth
-                        id="username"
-                        label="Username"
-                        name="username"
-                        autoComplete="username"
-                        autoFocus
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <TextField
-                        margin="normal"
                         fullWidth
                         id="fullName"
                         label="Full Name"
@@ -80,6 +66,17 @@ function Registration() {
                         autoComplete="name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="email"
+                        label="Email"
+                        name="email"
+                        autoComplete="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                     />
                     <TextField
                         margin="normal"
@@ -95,24 +92,24 @@ function Registration() {
                         margin="normal"
                         required
                         fullWidth
-                        id="email"
-                        label="Email"
-                        name="email"
-                        autoComplete="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        name="password1"
+                        label="Password"
+                        type="password"
+                        id="password1"
+                        autoComplete="current-password"
+                        value={password1}
+                        onChange={(e) => setPassword1(e.target.value)}
                     />
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        name="password"
-                        label="Password"
+                        name="password2"
+                        label="Confirm Password"
                         type="password"
-                        id="password"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        id="password2"
+                        value={password2}
+                        onChange={(e) => setPassword2(e.target.value)}
                     />
                     <FormControlLabel
                         control={
