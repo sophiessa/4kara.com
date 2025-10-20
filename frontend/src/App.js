@@ -88,6 +88,8 @@ function App() {
                     <Route path="/my-work" element={<MyWorkPage />} />
                     <Route path="/profile/edit" element={<EditProProfile />} />
                     <Route path="/profile/:userId" element={<PublicProProfile />} />
+                    <Route path="/auth/email-verified" element={<Typography variant="h5" align="center">Email successfully verified! You can now log in.</Typography>} />
+                    <Route path="/auth/verification-error" element={<Typography variant="h5" align="center">Email verification failed or link expired. Please request a new verification email.</Typography>} />
                 </Routes>
             </Container>
         </Router>
