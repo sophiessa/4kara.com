@@ -9,3 +9,13 @@ sudo systemctl restart nginx
 sudo systemctl restart gunicorn.service
 sudo systemctl status gunicorn.service
 sudo systemctl status nginx
+
+
+
+google-oauth2: gcp
+google-vertex-ai: gcp
+email-vertification: sendgrid
+virtual private server: digital ocean
+
+
+scp -r backend/gcp-service-account.json sophiessa@165.227.98.21:/home/sophiessa/4kara.com/backend
