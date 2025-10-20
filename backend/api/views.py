@@ -30,18 +30,7 @@ try:
 except Exception as e:
     print(f'Error initializing Vertex AI: {e}')
     
-
-class UserCreateView(generics.CreateAPIView):
-    """
-    A view for creating new users.
-    `CreateAPIView` is a generic view provided by DRF that handles POST requests for creating objects.
-    """
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
-    authentication_classes = []
     
-
 class MyProProfileView(generics.RetrieveUpdateAPIView):
     """
     Allows a professional user to retrieve and update their own profile.

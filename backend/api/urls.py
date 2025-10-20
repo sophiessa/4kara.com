@@ -1,15 +1,17 @@
-from django.urls import path
+from django.urls import path, include
 from .views import (
-    UserCreateView, JobCreateView, JobListView, 
+    JobCreateView, JobListView, 
     BidCreateView, LoginView, JobDetailView, 
     AcceptBidView, MyJobsListView, GoogleLoginView, 
     MessageCreateView, MessageListView, MyAcceptedJobsListView,
     ChatView, MyProProfileView, PublicProProfileView
     )
+from dj_rest_auth.registration.views import RegisterView
+
 
 
 urlpatterns = [
-    path('users/register/', UserCreateView.as_view(), name='user-register'),
+    path('users/register/', RegisterView.as_view(), name='user-register'),
     path('users/login/', LoginView.as_view(), name='user-login'),
     path('google/', GoogleLoginView.as_view(), name='google-login'),
     

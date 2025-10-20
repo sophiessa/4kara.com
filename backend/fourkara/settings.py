@@ -7,14 +7,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
-
 DEBUG = os.environ.get('DEBUG') == 'True'
 
 ALLOWED_HOSTS = []
 DEV_HOST = os.environ.get('DEV_ALLOWED_HOST')
 if DEV_HOST:
     DEV_HOST = [ALLOWED_HOSTS.append(ip) for ip in DEV_HOST.split(',') if ip.split()]
-
 PROD_HOST = os.environ.get('PROD_ALLOWED_HOST')
 if PROD_HOST:
     PROD_HOST = [ALLOWED_HOSTS.append(ip) for ip in PROD_HOST.split(',') if ip.strip()]
@@ -60,6 +58,32 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'fourkara.urls'
 
+SITE_ID = 1
+REST_AUTH = { 
+    'USE_JWT': False,
+    'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
+}
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/auth/email-verified'
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/auth/email-verified'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRED_REDIRECT_URL = '/auth/verification-error' 
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
+
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+SENDGRID_TRACK_CLICKS_HTML = False
+SENDGRID_TRACK_CLICKS_PLAIN = False
+SENDGRID_TRACK_OPENS = False
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'webmaster@localhost')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -74,6 +98,22 @@ TEMPLATES = [
         },
     },
 ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.environ.get('GOOGLE_OAUTH_CLIENT_ID'),
+            'secret': os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET'),
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
 
 WSGI_APPLICATION = 'fourkara.wsgi.application'
 
@@ -105,32 +145,6 @@ AUTHENTICATION_BACKENDS = [
 
 AUTH_USER_MODEL = 'api.User'
 
-
-SITE_ID = 1
-REST_AUTH = { 'USE_JWT': False }
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_VERIFICATION = "none"
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'APP': {
-            'client_id': os.environ.get('GOOGLE_OAUTH_CLIENT_ID'),
-            'secret': os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET'),
-        },
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
-
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -159,7 +173,4 @@ CORS_ALLOWED_ORIGINS = [
     'https://4kara.com',
     'https://www.4kara.com'
 ]
-
-
-
 

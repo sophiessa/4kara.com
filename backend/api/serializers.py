@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from dj_rest_auth.registration.serializers import RegisterSerializer
+from allauth.account import app_settings as allauth_settings
 from .models import User, Job, Bid, Message, ProProfile
 
 class UserSerializer(serializers.ModelSerializer):
@@ -22,6 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
+
 class ProProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for the ProProfile model.
@@ -41,6 +44,7 @@ class ProProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['user', 'full_name']
 
+
 class BidSerializer(serializers.ModelSerializer):
     """
     Serializer for the Bid model.
@@ -50,6 +54,7 @@ class BidSerializer(serializers.ModelSerializer):
         model = Bid
         fields = ['id', 'job', 'pro', 'amount', 'details', 'created_at']
         read_only_fields = ['job', 'pro']
+
 
 class JobSerializer(serializers.ModelSerializer):
     """
@@ -63,6 +68,7 @@ class JobSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'customer', 'street_address', 'city', 'state', 'zip_code', 'created_at', 'is_completed', 'bids', 'accepted_bid']
         read_only_fields = ['customer']
 
+
 class MessageSerializer(serializers.ModelSerializer):
     """
     Serializer for the Message model.
@@ -73,3 +79,19 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = ['id', 'job', 'sender', 'sender_name', 'receiver', 'body', 'timestamp']
         read_only_fields = ['sender', 'receiver', 'job']
+
+
+class CustomRegisterSerializer(RegisterSerializer):
+    is_pro = serializers.BooleanField(default=False)
+    full_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    phone_number = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    
+    def save(self, request):
+        user = super().save(request)
+        if not user.username:
+            user.username = user.email
+        user.is_pro = self.validated_data.get('is_pro', False)
+        user.full_name = self.validated_data.get('full_name', '')
+        user.phone_number = self.validated_data.get('phone_number', '')
+        user.save() 
+        return user
