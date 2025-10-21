@@ -1,12 +1,13 @@
-from django.urls import path, include
+from django.urls import path
 from .views import (
     JobCreateView, JobListView, 
-    BidCreateView, LoginView, JobDetailView, 
+    BidCreateView, JobDetailView, 
     AcceptBidView, MyJobsListView, GoogleLoginView, 
     MessageCreateView, MessageListView, MyAcceptedJobsListView,
     ChatView, MyProProfileView, PublicProProfileView
     )
 from dj_rest_auth.registration.views import RegisterView
+from dj_rest_auth.views import LoginView
 
 
 
