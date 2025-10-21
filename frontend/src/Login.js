@@ -1,15 +1,11 @@
 // frontend/src/Login.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from './api';
-
-// Import MUI components
+import { useNavigate } from 'react-router-dom';
 import { Container, Box, TextField, Button, Typography, Alert, Divider } from '@mui/material';
-import GoogleLoginButton from './GoogleLoginButton';
-
 
 function Login() {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -20,60 +16,83 @@ function Login() {
 
         try {
             const response = await api.post('/api/users/login/', {
-                username,
+                email: email,
                 password,
             });
-            
-            const { token, user } = response.data;
-            
+            console.log("Login API Response:", response.data);
+
+            const token = response.data.key;
+            const user = response.data.user;
+
+            if (token) {
             localStorage.setItem('authToken', token);
+            } else {
+                console.error("Auth token missing in login response!");
+                setError("Login failed: Could not retrieve token.");
+                return;
+            }
+            if (user && typeof user === 'object') {
             localStorage.setItem('user', JSON.stringify(user));
-            
+            console.log("Stored user data:", user);
+            } else {
+                console.warn("User object not in login response. Fetching separately...");
+                try {
+                    const userDetailsResponse = await api.get('/dj-rest-auth/user/', {
+                        headers: { 'Authorization': `Token ${token}` }
+                    });
+                    if (userDetailsResponse.data && typeof userDetailsResponse.data === 'object') {
+                        localStorage.setItem('user', JSON.stringify(userDetailsResponse.data));
+                        console.log("Stored user data after separate fetch:", userDetailsResponse.data);
+                    } else {
+                        console.error("Failed to fetch valid user details after login.");
+                        localStorage.removeItem('user');
+                    }
+                } catch (fetchErr) {
+                    console.error("Error fetching user details after login:", fetchErr);
+                    localStorage.removeItem('user');
+                }
+            }
+
             navigate('/jobs');
             window.location.reload();
 
         } catch (err) {
-            console.error('Login failed:', err);
-            setError('Login failed. Please check your username and password.');
+            console.error('Login failed:', err.response?.data || err.message);
+            const errorData = err.response?.data || {};
+            let errorMessages = [];
+             if (errorData.non_field_errors) { 
+                errorMessages = errorData.non_field_errors;
+             } else if (typeof errorData === 'object' && errorData !== null) {
+                errorMessages = Object.keys(errorData).map(key => `${key}: ${Array.isArray(errorData[key]) ? errorData[key].join(' ') : errorData[key]}`);
+             } else {
+                 errorMessages.push('Login failed. Please check credentials or verify your email.');
+             }
+            setError(errorMessages.join('; '));
         }
     };
 
     return (
-        // Container centers the content and sets a max-width.
         <Container component="main" maxWidth="xs">
-            {/* Box is a generic container for layout. We use it to create the form structure. */}
-            <Box
-                sx={{
+            <Box sx={{
                     marginTop: 8,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                }}
-            >
-                {/* Typography is used for all text elements. */}
-                <Typography component="h1" variant="h5">
-                    Sign In
-                </Typography>
-
-                <Box sx={{ mt: 3, mb: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                    <GoogleLoginButton />
-                </Box>
-
+                }} >
+                <Typography component="h1" variant="h5"> Sign In </Typography>
                 <Divider sx={{ width: '100%' }}>OR</Divider>
-                {/* We use Box for the form element itself to attach the onSubmit handler. */}
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-                    {/* TextField is the MUI equivalent of an <input> tag. */}
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        id="username"
-                        label="Username"
-                        name="username"
-                        autoComplete="username"
+                        id="email" 
+                        label="Email Address" 
+                        name="email"
+                        autoComplete="email"
                         autoFocus
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
                     />
                     <TextField
                         margin="normal"
@@ -87,21 +106,10 @@ function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-
-                
-                    {/* Button provides styled buttons with ripple effects. */}
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        sx={{ mt: 3, mb: 2 }}
-                    >
+                    <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
                         Sign In
                     </Button>
-                    {/* Use the Alert component for displaying errors. */}
                     {error && <Alert severity="error">{error}</Alert>}
-
-                    
                 </Box>
             </Box>
         </Container>

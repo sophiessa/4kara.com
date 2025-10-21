@@ -1,6 +1,6 @@
 import os
 from .models import User, ProProfile, Job, Bid, Message
-from .serializers import UserSerializer, ProProfileSerializer, JobSerializer, BidSerializer, MessageSerializer
+from .serializers import ProProfileSerializer, JobSerializer, BidSerializer, MessageSerializer
 from .permissions import IsProfessionalUser
 
 import vertexai
@@ -30,7 +30,7 @@ try:
 except Exception as e:
     print(f'Error initializing Vertex AI: {e}')
     
-    
+
 class MyProProfileView(generics.RetrieveUpdateAPIView):
     """
     Allows a professional user to retrieve and update their own profile.
@@ -110,31 +110,6 @@ class BidCreateView(generics.CreateAPIView):
         job_id = self.kwargs['job_id']
         job = get_object_or_404(Job, id=job_id)
         serializer.save(job=job, pro=self.request.user)
-
-
-class LoginView(APIView):
-    """
-    Custom login view to return user data along with the token.
-    """
-    permission_classes = [AllowAny]
-    authentication_classes = []
-
-    def post(self, request, *args, **kwargs):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            token, created = Token.objects.get_or_create(user=user)
-            user_data = {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "is_pro": user.is_pro,
-                "full_name": user.full_name
-            }
-            return Response({"token": token.key, "user": user_data})
-        else:
-            return Response({"error": "Invalid Credentials"}, status=400)
 
 
 class JobDetailView(generics.RetrieveAPIView):

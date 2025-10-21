@@ -1,7 +1,5 @@
-// frontend/src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link as RouterLink } from 'react-router-dom';
-// Import the necessary MUI components
 import { AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
 
 import JobList from './JobList';
@@ -20,26 +18,38 @@ import './App.css';
 
 function App() {
     const token = localStorage.getItem('authToken');
-    const user = JSON.parse(localStorage.getItem('user'));
+    let user = null;
+    const userItem = localStorage.getItem('user');
+    if (userItem !== null && typeof userItem !== 'undefined') {
+        try {
+            if (userItem !== "undefined") {
+                 user = JSON.parse(userItem);
+            } else {
+                 localStorage.removeItem('user');
+            }
+        } catch (error) {
+            localStorage.removeItem('user');
+            user = null;
+        }
+    } else {
+         console.log("[DEBUG] No user item found or item was null/undefined.");
+    }
 
     const handleLogout = () => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
-        window.location.href = '/login'; // Redirect cleanly after logout
+        window.location.href = '/login';
     };
 
     return (
         <Router>
-            {/* The AppBar provides the main navigation header */}
             <AppBar position="static">
-                {/* Toolbar handles the horizontal layout of items */}
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
                             4KARA LLC
                         </RouterLink>
                     </Typography>
-                    {/* Typography for the site title. The sx prop is for custom styling. */}
                     {user && (
                         <Typography sx={{ mr: 2 }}>Welcome {user.full_name}</Typography>
                     )}
@@ -73,8 +83,7 @@ function App() {
                     
                 </Toolbar>
             </AppBar>
-
-            {/* Container provides consistent padding and centering for the page content. */}
+            
             <Container component="main" sx={{ mt: 4, mb: 4 }}>
                 <Routes>
                     <Route path="/" element={<ChatInterface />} />
