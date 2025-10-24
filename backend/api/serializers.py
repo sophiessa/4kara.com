@@ -47,7 +47,7 @@ class ProProfileSerializer(serializers.ModelSerializer):
             'twitter_url',
             'personal_website_url',
             'services_offered',
-            'availability_notes',
+            'availability',
             'faq',
         ]
         read_only_fields = ['user', 'first_name', 'last_name']

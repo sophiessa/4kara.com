@@ -62,6 +62,7 @@ SITE_ID = 1
 REST_AUTH = { 
     'USE_JWT': False,
     'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
+    'USER_DETAILS_SERIALIZER': 'api.serializers.UserSerializer',
 }
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True

@@ -84,9 +84,9 @@ class JobListView(generics.ListAPIView):
     permission_classes = [IsProfessionalUser]
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['zip_code', 'state'] # Allow filtering by these exact fields
-    search_fields = ['title', 'description'] # Allow full-text search on these fields
-    ordering_fields = ['created_at', 'city'] # Allow sorting by these fields
+    filterset_fields = ['zip_code', 'state']
+    search_fields = ['title', 'description'] 
+    ordering_fields = ['created_at', 'city']
 
 
     def get_queryset(self):
@@ -188,13 +188,15 @@ class GoogleLoginView(APIView):
             print(os.environ.get('GOOGLE_OAUTH_CLIENT_ID'))
             
             email = idinfo['email']
-            full_name = idinfo.get('name', '')
+            first_name = idinfo.get('given_name', '')
+            last_name = idinfo.get('family_name', '')
             
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
                     'username': email,
-                    'full_name': full_name,
+                    'first_name': first_name,
+                    'last_name': last_name,
                     'is_pro': False
                 }
             )
@@ -206,7 +208,9 @@ class GoogleLoginView(APIView):
                 "username": user.username,
                 "email": user.email,
                 "is_pro": user.is_pro,
-                "full_name": user.full_name
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "phone_number": user.phone_number
             }
             
             return Response({
