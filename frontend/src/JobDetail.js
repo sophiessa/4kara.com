@@ -38,30 +38,46 @@ function JobDetail() {
     };
 
     useEffect(() => {
+        let isMounted = true;
         if (!token) {
             navigate('/login');
             return;
         }
         const fetchJob = async () => {
+            setLoading(true);
+            setError('');
             try {
                 const response = await api.get(`/api/jobs/${jobId}/`, {
                     headers: { 'Authorization': `Token ${token}` }
                 });
-                setJob(response.data);
+                if (isMounted) {
+                    setJob(response.data);
+                    const currentUser = JSON.parse(localStorage.getItem('user'));
+                    if (response.data && currentUser) {
+                        const userReview = response.data.reviews?.find(review => review.customer === currentUser.id);
+                        if (userReview) {
+                            setReviewSubmitted(true);
+                        } else {
+                            setReviewSubmitted(false);
+                        }
+                    }
+                }
             } catch (err) {
-                setError('Failed to fetch job details.');
+                console.error("Fetch job error:", err.response);
+                if (isMounted) {
+                    setError('Failed to fetch job details.');
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
         fetchJob();
-        if (job && user) {
-            const userReview = job.reviews?.find(review => review.customer === user.id);
-            if (userReview) {
-                setReviewSubmitted(true);
-            }
-        }
-    }, [jobId, token, navigate, job, user]);
+        return () => {
+            isMounted = false;
+        };
+    }, [jobId, token, navigate]);
 
 
     const handleReviewSubmit = async (e) => {
