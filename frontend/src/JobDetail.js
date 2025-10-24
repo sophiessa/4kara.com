@@ -1,9 +1,6 @@
-// frontend/src/JobDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import api from './api';
-
-// Import a larger set of MUI components for layout and display
 import { Paper, Typography, Box, Divider, TextField, Button, List, ListItem, ListItemText, Alert, CircularProgress } from '@mui/material';
 
 function JobDetail() {
@@ -29,7 +26,6 @@ function JobDetail() {
             await api.post(`/api/bids/${bidId}/accept/`, {}, {
                 headers: { 'Authorization': `Token ${token}` }
             });
-            // Reload to see the updated job status
             window.location.reload();
         } catch (err) {
             console.error('Error accepting bid:', err);
@@ -38,7 +34,6 @@ function JobDetail() {
     };
 
     useEffect(() => {
-        // ... (fetchJob logic remains the same, just add setLoading)
         if (!token) {
             navigate('/login');
             return;
@@ -75,7 +70,7 @@ function JobDetail() {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
     }
     if (error) return <Alert severity="error">{error}</Alert>;
-    if (!job) return null; // Or some other placeholder
+    if (!job) return null;
 
     const isOwner = user && user.id === job.customer;
     const isHiredPro = user && job.accepted_bid && user.id === job.accepted_bid.pro;
@@ -83,7 +78,6 @@ function JobDetail() {
   
 
     return (
-        // Paper provides a clean, elevated surface for the content.
         <Paper elevation={3} sx={{ p: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h3" component="h1" gutterBottom>
@@ -138,24 +132,19 @@ function JobDetail() {
                 </Box>
             )}
             
-
-            {/* Bids List for the Job Owner */}
             {isOwner && (
                 <Box>
                     <Typography variant="h5" component="h2" gutterBottom>
-                        {/* Show a different title if the job is completed */}
                         {job.is_completed ? "Job Status: Closed" : "Bids Received"}
                     </Typography>
                     {job.bids.length > 0 ? (
                         <List>
                             {job.bids.map(bid => (
                                 <ListItem key={bid.id} divider
-                                    // Highlight the accepted bid
                                     sx={job.accepted_bid === bid.id ? { backgroundColor: 'action.selected' } : {}}
                                 >
                                     <ListItemText
                                         primary={
-                                            // Make the name a link to the pro's profile
                                             <Typography variant="h6" component={RouterLink} to={`/profile/${bid.pro}`} sx={{ textDecoration: 'none', color: 'primary.main' }}>
                                                 Bid by Pro #{bid.pro} {/* We'll add name later */}
                                             </Typography>
@@ -170,7 +159,6 @@ function JobDetail() {
                                             </>
                                         }
                                     />
-                                    {/* Show the Accept button ONLY if the job is not yet completed */}
                                     {!job.is_completed && (
                                         <Button 
                                             variant="outlined" 

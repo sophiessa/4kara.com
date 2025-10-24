@@ -1,4 +1,3 @@
-// frontend/src/MyWorkPage.js
 import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import api from './api';
@@ -18,7 +17,6 @@ function MyWorkPage() {
                 return;
             }
             try {
-                // Call the new /api/my-work/ endpoint
                 const response = await api.get('/api/my-work/', {
                     headers: { 'Authorization': `Token ${authToken}` }
                 });

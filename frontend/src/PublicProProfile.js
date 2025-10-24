@@ -1,11 +1,10 @@
-// frontend/src/PublicProProfile.js
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from './api';
 import { Container, Box, Typography, Paper, Avatar, CircularProgress, Alert } from '@mui/material';
 
 function PublicProProfile() {
-    const { userId } = useParams(); // Get user ID from URL
+    const { userId } = useParams(); 
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -34,7 +33,7 @@ function PublicProProfile() {
     }
 
     if (!profile) {
-        return <Typography>Profile not found.</Typography>; // Fallback if no profile and no error
+        return <Typography>Profile not found.</Typography>;
     }
 
     return (
@@ -42,12 +41,12 @@ function PublicProProfile() {
             <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar
-                        alt={profile.full_name || 'Professional'}
-                        src={profile.profile_picture_url || '/default-avatar.png'} // Add a default avatar later
+                        alt={profile.first_name + ' ' + profile.last_name|| 'Professional'}
+                        src={profile.profile_picture_url || '/default-avatar.png'} 
                         sx={{ width: 80, height: 80, mr: 2 }}
                     />
                     <Typography variant="h4" component="h1">
-                        {profile.full_name || 'Professional Profile'}
+                        {profile.first_name + ' ' + profile.last_name|| 'Professional Profile'}
                     </Typography>
                 </Box>
                 <Typography variant="h6" gutterBottom>About</Typography>

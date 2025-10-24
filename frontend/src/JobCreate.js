@@ -1,4 +1,3 @@
-// frontend/src/JobCreate.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api';
@@ -39,7 +38,6 @@ function JobCreate() {
                 }
             });
 
-            // Redirect to the job list after successful creation.
             navigate('/my-jobs');
 
         } catch (err) {

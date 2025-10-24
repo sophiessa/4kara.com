@@ -1,4 +1,3 @@
-// frontend/src/EditProProfile.js
 import React, { useState, useEffect } from 'react';
 import api from './api';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +17,7 @@ function EditProProfile() {
 
     useEffect(() => {
         if (!token) {
-            navigate('/login'); // Redirect if not logged in
+            navigate('/login');
             return;
         }
 
@@ -27,7 +26,7 @@ function EditProProfile() {
                 const response = await api.get('/api/profile/pro/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
-                setProfile(response.data); // Load existing profile data
+                setProfile(response.data);
             } catch (err) {
                 setError('Failed to load profile.');
                 console.error("Fetch profile error:", err.response);
@@ -52,12 +51,10 @@ function EditProProfile() {
         setLoading(true);
 
         try {
-            // Use PUT or PATCH to update the profile
             const response = await api.patch('/api/profile/pro/', profile, {
                 headers: { 'Authorization': `Token ${token}` }
             });
             setSuccess(response.data.message || 'Profile updated successfully!');
-            // Optionally update the local profile state again if needed
             setProfile(response.data.data || profile);
         } catch (err) {
             setError('Failed to update profile. Please try again.');
@@ -67,7 +64,7 @@ function EditProProfile() {
         }
     };
 
-    if (loading && !profile.bio) { // Show loading only on initial load
+    if (loading && !profile.bio) { 
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
     }
 
@@ -124,7 +121,7 @@ function EditProProfile() {
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
-                        disabled={loading} // Disable button while submitting
+                        disabled={loading}
                     >
                         {loading ? <CircularProgress size={24} /> : 'Save Profile'}
                     </Button>

@@ -51,7 +51,7 @@ function App() {
                         </RouterLink>
                     </Typography>
                     {user && (
-                        <Typography sx={{ mr: 2 }}>Welcome {user.full_name}</Typography>
+                        <Typography sx={{ mr: 2 }}>Welcome {user.first_name}</Typography>
                     )}
                     
                     {user && user.is_pro && (

@@ -7,7 +7,8 @@ function Registration() {
     const [email, setEmail] = useState('');
     const [password1, setPassword1] = useState('');
     const [password2, setPassword2] = useState('');
-    const [fullName, setFullName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isPro, setIsPro] = useState(false);
     const [error, setError] = useState('');
@@ -24,7 +25,8 @@ function Registration() {
 
         const userData = {
             email,
-            full_name: fullName, 
+            first_name: firstName,
+            last_name: lastName,
             phone_number: phoneNumber,
             password1: password1, 
             password2: password2,
@@ -60,12 +62,22 @@ function Registration() {
                     <TextField
                         margin="normal"
                         fullWidth
-                        id="fullName"
-                        label="Full Name"
-                        name="full_name"
-                        autoComplete="name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        id="firstName"
+                        label="First Name"
+                        name="first_name"
+                        autoComplete="given-name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        fullWidth
+                        id="lastName"
+                        label="Last Name"
+                        name="last_name"
+                        autoComplete="family-name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
                     />
                     <TextField
                         margin="normal"

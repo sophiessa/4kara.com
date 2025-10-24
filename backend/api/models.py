@@ -10,7 +10,6 @@ class User(AbstractUser):
     The `is_pro` boolean field distinguishes between Customers and Professionals.
     """
     is_pro = models.BooleanField('Is professional', default=False)
-    full_name = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=20, blank=True)
     
 
@@ -36,11 +35,8 @@ class ProProfile(models.Model):
     facebook_url = models.URLField(blank=True, help_text="Link to Facebook profile (optional)")
     twitter_url = models.URLField(blank=True, help_text="Link to Twitter profile (optional)")
     personal_website_url = models.URLField(blank=True, help_text="Link to personal website (optional)")
-
     services_offered = models.TextField(blank=True, help_text="Describe the main services you provide.")
-    # Availability could be simple text for now
-    availability_notes = models.CharField(max_length=255, blank=True, help_text="e.g., Weekdays 9am-5pm, Emergency calls available")
-    # FAQ - store as structured text (e.g., JSON) or keep simple for now
+    availability = models.CharField(max_length=255, blank=True, help_text="e.g., Weekdays 9am-5pm, Emergency calls available")
     faq = models.TextField(blank=True, help_text="Optional FAQ section (e.g., Q: What's your hourly rate? A: ...)")
 
     def __str__(self):

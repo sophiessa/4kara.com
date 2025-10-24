@@ -1,4 +1,3 @@
-// frontend/src/ConversationPage.js
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from './api';
@@ -38,7 +37,6 @@ function ConversationPage() {
                 { body: newMessage },
                 { headers: { 'Authorization': `Token ${token}` } }
             );
-            // Add the new message to the list and clear the input field
             setMessages([...messages, response.data]);
             setNewMessage('');
         } catch (err) {
@@ -55,7 +53,6 @@ function ConversationPage() {
             <List sx={{ mb: 2, maxHeight: '500px', overflow: 'auto' }}>
                 {messages.map(msg => (
                     <ListItem key={msg.id} sx={{ 
-                        // Align messages left or right based on the sender
                         flexDirection: 'column', 
                         alignItems: msg.sender === user.id ? 'flex-end' : 'flex-start' 
                     }}>

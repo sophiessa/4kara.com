@@ -1,21 +1,19 @@
-// frontend/src/ChatInterface.js
 import React, { useState } from 'react';
 import { Box, TextField, IconButton, Paper, List, ListItem, ListItemText, CircularProgress, Alert, Typography } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import SendIcon from '@mui/icons-material/Send';
-import api from './api'; // Import our configured axios instance
+import api from './api';
 
 function ChatInterface() {
     const [message, setMessage] = useState('');
-    const [conversation, setConversation] = useState([]); // State to hold messages {sender: 'user'/'ai', text: '...'}
+    const [conversation, setConversation] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     const handleKeyDown = (event) => {
-        // Check if Enter was pressed WITHOUT the Shift key
         if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault(); // Prevent adding a newline
-            handleSend(event); // Trigger the send function
+            event.preventDefault();
+            handleSend(event);
         }
     };
 
@@ -23,33 +21,27 @@ function ChatInterface() {
         e.preventDefault();
         const userMessage = message.trim();
         if (!userMessage) return;
-
         const currentConversationHistory = [...conversation];
-
-        // Add user message to conversation history
         setConversation(prev => [...prev, { sender: 'user', text: userMessage }]);
-        setMessage(''); // Clear input
-        setLoading(true); // Show loading indicator
-        setError(''); // Clear previous errors
+        setMessage('');
+        setLoading(true);
+        setError('');
 
         try {
-            // Send user message to the backend
             const response = await api.post('/api/chat/', { 
                 message: userMessage,
                 history: currentConversationHistory
              });
 
-            // Add AI response to conversation history
             const aiReply = response.data.reply;
             setConversation(prev => [...prev, { sender: 'ai', text: aiReply }]);
 
         } catch (err) {
             console.error("Chat API error:", err.response);
             setError(err.response?.data?.error || 'Failed to get response from AI.');
-            // Optionally add an error message to the chat
             setConversation(prev => [...prev, { sender: 'ai', text: 'Sorry, I encountered an error.' }]);
         } finally {
-            setLoading(false); // Hide loading indicator
+            setLoading(false);
         }
     };
 
@@ -62,8 +54,8 @@ function ChatInterface() {
                 justifyContent: conversation.length > 0 ? 'flex-end' : 'center',
                 alignItems: 'center',
                 p: 2,
-                height: 'calc(80vh - 64px)', // Adjust as needed
-                position: 'relative', // Keep for buttons
+                height: 'calc(80vh - 64px)',
+                position: 'relative',
             }}
         >
             {conversation.length === 0 && (
@@ -77,7 +69,7 @@ function ChatInterface() {
                 width: '100%', 
                 maxWidth: '800px', 
                 flexGrow: 1, 
-                overflow: 'auto', // Make messages scrollable
+                overflow: 'auto', 
                 mb: 2, 
                 p: 2 
             }}>
@@ -90,16 +82,15 @@ function ChatInterface() {
                                 p: 1.5, 
                                 maxWidth: '75%',
                                 backgroundColor: msg.sender === 'user' ? 'primary.light' : 'grey.200',
-                                wordBreak: 'break-word', // Ensure long words wrap
+                                wordBreak: 'break-word', 
                             }}>
                                 {msg.sender === 'ai' ? (
-                                    <ReactMarkdown components={{ // Optional: Use MUI Typography for paragraphs
+                                    <ReactMarkdown components={{ 
                                         p: ({node, ...props}) => <Typography variant="body1" {...props} />
                                     }}>
                                         {msg.text}
                                     </ReactMarkdown>
                                 ) : (
-                                    // Otherwise, just display user text normally
                                     <ListItemText primary={msg.text} />
                                 )}
                             </Paper>
@@ -127,7 +118,7 @@ function ChatInterface() {
                     display: 'flex',
                     alignItems: 'center',
                     width: '100%',
-                    maxWidth: '800px', // Consistent width
+                    maxWidth: '800px', 
                     borderRadius: '28px',
                     boxShadow: 3,
                 }}

@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'is_pro', 'full_name', 'phone_number')
+        fields = ('id', 'username', 'email', 'password', 'is_pro', 'first_name', 'last_name', 'phone_number')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -30,19 +30,21 @@ class ProProfileSerializer(serializers.ModelSerializer):
     Serializer for the ProProfile model.
     """
     user = serializers.PrimaryKeyRelatedField(read_only=True)
-    full_name = serializers.CharField(source='user.full_name', read_only=True)
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
 
     class Meta:
         model = ProProfile
         fields = [
             'id',
             'user',
-            'full_name',
+            'first_name',
+            'last_name',
             'bio',
             'service_area_zip_codes',
             'profile_picture_url',
         ]
-        read_only_fields = ['user', 'full_name']
+        read_only_fields = ['user', 'first_name', 'last_name']
 
 
 class BidSerializer(serializers.ModelSerializer):
@@ -71,19 +73,25 @@ class JobSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     """
-    Serializer for the Message model.
+    Serializer for the Message model. Includes sender's combined full name.
     """
-    sender_name = serializers.CharField(source='sender.full_name', read_only=True)
+    sender_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
         fields = ['id', 'job', 'sender', 'sender_name', 'receiver', 'body', 'timestamp']
         read_only_fields = ['sender', 'receiver', 'job']
 
+    def get_sender_name(self, obj):
+        first = obj.sender.first_name
+        last = obj.sender.last_name
+        return f"{first} {last}".strip() or obj.sender.username
+
 
 class CustomRegisterSerializer(RegisterSerializer):
     is_pro = serializers.BooleanField(default=False)
-    full_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    first_name = serializers.CharField(max_length=30, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     phone_number = serializers.CharField(max_length=20, required=False, allow_blank=True)
     
     def save(self, request):
@@ -91,7 +99,8 @@ class CustomRegisterSerializer(RegisterSerializer):
         if not user.username:
             user.username = user.email
         user.is_pro = self.validated_data.get('is_pro', False)
-        user.full_name = self.validated_data.get('full_name', '')
+        user.first_name = self.validated_data.get('first_name', '')
+        user.last_name = self.validated_data.get('last_name', '')
         user.phone_number = self.validated_data.get('phone_number', '')
         user.save() 
         return user

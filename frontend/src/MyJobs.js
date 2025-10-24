@@ -1,4 +1,3 @@
-// frontend/src/MyJobs.js
 import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Grid, Card, CardActionArea, CardContent, Typography, Alert, CircularProgress, Box } from '@mui/material';
@@ -19,7 +18,6 @@ function MyJobs() {
                 return;
             }
             try {
-                // Call the new endpoint we just created
                 const response = await api.get('/api/my-jobs/', {
                     headers: { 'Authorization': `Token ${authToken}` }
                 });
