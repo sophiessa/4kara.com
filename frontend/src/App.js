@@ -58,11 +58,10 @@ function App() {
                         <>
                             <Button color="inherit" component={RouterLink} to="/jobs">Browse Jobs</Button>
                             <Button color="inherit" component={RouterLink} to="/my-work">My Work</Button>
-                            <Button color="inherit" component={RouterLink} to="/profile/edit">My Profile</Button>
+                            <Button color="inherit" component={RouterLink} to="/profile/edit">Edit Profile</Button>
                         </>
                     )}
                     
-                    {/* Conditional links for Customers */}
                     {user && !user.is_pro && (
                          <>
                             {/* The new "My Jobs" link */}
