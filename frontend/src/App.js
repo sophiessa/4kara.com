@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link as RouterLink } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Navigate, Route, Link as RouterLink } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
 
 import JobList from './JobList';
@@ -94,7 +94,16 @@ function App() {
                     <Route path="/my-jobs" element={<MyJobs />} />
                     <Route path="/jobs/:jobId/conversation" element={<ConversationPage />} />
                     <Route path="/my-work" element={<MyWorkPage />} />
-                    <Route path="/profile/edit" element={<EditProProfile />} />
+                    <Route
+                        path="/profile/edit"
+                        element={
+                            user && user.is_pro ? (
+                                <EditProProfile />
+                            ) : (
+                                <Navigate to="/" replace /> 
+                            )
+                        }
+                    />
                     <Route path="/profile/:userId" element={<PublicProProfile />} />
                     <Route path="/auth/email-verified" element={<Typography variant="h5" align="center">Email successfully verified! You can now log in.</Typography>} />
                     <Route path="/auth/verification-error" element={<Typography variant="h5" align="center">Email verification failed or link expired. Please request a new verification email.</Typography>} />
