@@ -1,6 +1,6 @@
 import os
-from .models import User, ProProfile, Job, Bid, Message
-from .serializers import ProProfileSerializer, JobSerializer, BidSerializer, MessageSerializer
+from .models import User, ProProfile, Job, Bid, Message, Review
+from .serializers import ProProfileSerializer, JobSerializer, BidSerializer, MessageSerializer, ReviewSerializer
 from .permissions import IsProfessionalUser
 
 import vertexai
@@ -331,3 +331,27 @@ class ChatView(APIView):
         except Exception as e:
             print(f"Error calling Vertex AI: {e}")
             return Response({'error': 'Sorry, I encountered an error. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+class ReviewCreateView(generics.CreateAPIView):
+    """
+    Allows a customer to create a review for a completed job they hired a pro for.
+    """
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated] # Must be logged in
+
+    def perform_create(self, serializer):
+        job_id = self.kwargs['job_id']
+        job = get_object_or_404(Job, id=job_id)
+        customer = self.request.user
+        if job.customer != customer:
+            raise serializers.ValidationError("You can only review jobs you created.")
+        if not job.accepted_bid:
+            raise serializers.ValidationError("Cannot review a job until a bid has been accepted.")
+        if not job.is_completed:
+            raise serializers.ValidationError("Cannot review a job that is not marked as completed.")
+        pro = job.accepted_bid.pro
+        if Review.objects.filter(job=job, customer=customer, pro=pro).exists():
+            raise serializers.ValidationError("You have already submitted a review for this job.")
+        serializer.save(job=job, customer=customer, pro=pro)

@@ -4,7 +4,8 @@ from .views import (
     BidCreateView, JobDetailView, 
     AcceptBidView, MyJobsListView, GoogleLoginView, 
     MessageCreateView, MessageListView, MyAcceptedJobsListView,
-    ChatView, MyProProfileView, PublicProProfileView
+    ChatView, MyProProfileView, PublicProProfileView,
+    ReviewCreateView
     )
 from dj_rest_auth.registration.views import RegisterView
 from dj_rest_auth.views import LoginView
@@ -19,6 +20,7 @@ urlpatterns = [
     path('jobs/', JobListView.as_view(), name='job-list'),
     path('jobs/create/', JobCreateView.as_view(), name='job-create'),
     path('jobs/<int:pk>/', JobDetailView.as_view(), name='job-detail'),
+    path('jobs/<int:job_id>/reviews/', ReviewCreateView.as_view(), name='review-create'),
     path('jobs/<int:job_id>/bid/', BidCreateView.as_view(), name='bid-create'),
     path('bids/<int:bid_id>/accept/', AcceptBidView.as_view(), name='accept-bid'),
     path('jobs/<int:job_id>/messages/', MessageListView.as_view(), name='message-list'),

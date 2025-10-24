@@ -1,7 +1,7 @@
+from django.db.models import Avg
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from allauth.account import app_settings as allauth_settings
-from .models import User, Job, Bid, Message, ProProfile
+from .models import User, Job, Bid, Message, ProProfile, Review
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -26,33 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
     
 
-class ProProfileSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
-    first_name = serializers.CharField(source='user.first_name', read_only=True)
-    last_name = serializers.CharField(source='user.last_name', read_only=True)
-
-    class Meta:
-        model = ProProfile
-        fields = [
-            'id',
-            'user',
-            'first_name',
-            'last_name',
-            'bio',
-            'service_area_zip_codes',
-            'profile_picture_url',
-            'years_experience',
-            'instagram_url',
-            'facebook_url',
-            'twitter_url',
-            'personal_website_url',
-            'services_offered',
-            'availability',
-            'faq',
-        ]
-        read_only_fields = ['user', 'first_name', 'last_name']
-
-
 class BidSerializer(serializers.ModelSerializer):
     """
     Serializer for the Bid model.
@@ -62,19 +35,6 @@ class BidSerializer(serializers.ModelSerializer):
         model = Bid
         fields = ['id', 'job', 'pro', 'amount', 'details', 'created_at']
         read_only_fields = ['job', 'pro']
-
-
-class JobSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the Job model.
-    """
-    bids = BidSerializer(many=True, read_only=True)
-    accepted_bid = BidSerializer(read_only=True)
-
-    class Meta:
-        model = Job
-        fields = ['id', 'title', 'description', 'customer', 'street_address', 'city', 'state', 'zip_code', 'created_at', 'is_completed', 'bids', 'accepted_bid']
-        read_only_fields = ['customer']
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -110,3 +70,82 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.phone_number = self.validated_data.get('phone_number', '')
         user.save() 
         return user
+    
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Review model.
+    """
+    customer_name = serializers.CharField(source='customer.get_full_name', read_only=True)
+    job_title = serializers.CharField(source='job.title', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = [
+            'id',
+            'job',
+            'job_title',
+            'pro',      
+            'customer',   
+            'customer_name',
+            'rating',   
+            'comment',    
+            'created_at',
+        ]
+        read_only_fields = ['pro', 'customer', 'job', 'created_at', 'customer_name']
+
+    def validate_rating(self, value):
+        """Ensure rating is between 1 and 5."""
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5.")
+        return value
+    
+class JobSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Job model.
+    """
+    bids = BidSerializer(many=True, read_only=True)
+    accepted_bid = BidSerializer(read_only=True)
+    reviews = ReviewSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Job
+        fields = ['id', 'title', 'description', 'customer', 'street_address', 'city', 'state', 'zip_code', 'created_at', 'is_completed', 'bids', 'accepted_bid', 'reviews']
+        read_only_fields = ['customer']  
+
+
+class ProProfileSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+    reviews_received = ReviewSerializer(source='user.reviews_received', many=True, read_only=True)
+    average_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProProfile
+        fields = [
+            'id',
+            'user',
+            'first_name',
+            'last_name',
+            'bio',
+            'service_area_zip_codes',
+            'profile_picture_url',
+            'years_experience',
+            'instagram_url',
+            'facebook_url',
+            'twitter_url',
+            'personal_website_url',
+            'services_offered',
+            'availability',
+            'faq',
+            'reviews_received', 
+            'average_rating',
+        ]
+        read_only_fields = ['user', 'first_name', 'last_name']
+
+    def get_average_rating(self, obj):
+        avg = obj.user.reviews_received.aggregate(Avg('rating'))['rating__avg']
+        return round(avg, 1) if avg is not None else None
+
+          

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from './api';
-import { Container, Box, Typography, Paper, Avatar, CircularProgress, Alert, Grid, Link, Divider } from '@mui/material';
+import { Container, Box, Typography, Paper, Avatar, CircularProgress, Alert, Grid, Link, Divider, Rating , List, ListItem, ListItemText} from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LinkIcon from '@mui/icons-material/Link';
@@ -99,6 +99,59 @@ function PublicProProfile() {
                          <Typography variant="h6" gutterBottom>FAQ</Typography>
                          <Typography paragraph sx={{ whiteSpace: 'pre-wrap' }}>{profile.faq}</Typography>
                     </>
+                )}
+
+                {profile.average_rating !== null ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                        <Rating value={profile.average_rating} precision={0.1} readOnly />
+                        <Typography sx={{ ml: 1 }}>({profile.average_rating} / 5)</Typography>
+                        <Typography sx={{ ml: 1, color: 'text.secondary' }}>
+                            ({profile.reviews_received?.length || 0} reviews)
+                        </Typography>
+                    </Box>
+                ) : (
+                    <Typography variant="subtitle1" color="text.secondary" sx={{mt: 1}}>No reviews yet</Typography>
+                )}
+
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>Reviews</Typography>
+                {profile.reviews_received && profile.reviews_received.length > 0 ? (
+                    <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+                        {profile.reviews_received.map((review) => (
+                            <ListItem key={review.id} alignItems="flex-start" divider>
+                                <ListItemText
+                                    primary={
+                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Rating value={review.rating} readOnly size="small" sx={{ mr: 1 }} />
+                                            <Typography variant="body1">
+                                                For job: {/* Add link to job if desired */}
+                                                "{review.job_title || `Job #${review.job}`}"
+                                             </Typography>
+                                        </Box>
+                                    }
+                                    secondary={
+                                        <>
+                                            <Typography
+                                                sx={{ display: 'inline' }}
+                                                component="span"
+                                                variant="body2"
+                                                color="text.primary"
+                                            >
+                                                {review.customer_name || `Customer #${review.customer}`}
+                                            </Typography>
+                                            {` — ${review.comment || 'No comment provided.'}`}
+                                            <br />
+                                            <Typography component="span" variant="caption" color="text.secondary">
+                                                 {new Date(review.created_at).toLocaleDateString()}
+                                            </Typography>
+                                        </>
+                                    }
+                                />
+                            </ListItem>
+                        ))}
+                    </List>
+                ) : (
+                    <Typography>This professional has not received any reviews yet.</Typography>
                 )}
 
             </Paper>

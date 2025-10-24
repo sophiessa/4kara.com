@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import api from './api';
-import { Paper, Typography, Box, Divider, TextField, Button, List, ListItem, ListItemText, Alert, CircularProgress } from '@mui/material';
+import { Paper, Typography, Box, Divider, TextField, Button, List, ListItem, ListItemText, Alert, CircularProgress, Rating } from '@mui/material';
 
 function JobDetail() {
     const [job, setJob] = useState(null);
@@ -10,9 +10,13 @@ function JobDetail() {
     const [bidAmount, setBidAmount] = useState('');
     const [bidDetails, setBidDetails] = useState('');
     
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState('');
+    const [reviewError, setReviewError] = useState('');
+    const [reviewSubmitted, setReviewSubmitted] = useState(false);
+    
     const { jobId } = useParams();
     const navigate = useNavigate();
-
     const token = localStorage.getItem('authToken');
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -51,10 +55,36 @@ function JobDetail() {
             }
         };
         fetchJob();
-    }, [jobId, token, navigate]);
+        if (job && user) {
+            const userReview = job.reviews?.find(review => review.customer === user.id);
+            if (userReview) {
+                setReviewSubmitted(true);
+            }
+        }
+    }, [jobId, token, navigate, job, user]);
+
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        setReviewError('');
+        if (rating === 0) {
+            setReviewError('Please select a star rating.');
+            return;
+        }
+        try {
+            await api.post(`/api/jobs/${jobId}/reviews/`,
+                { rating: rating, comment: comment },
+                { headers: { 'Authorization': `Token ${token}` } }
+            );
+            setReviewSubmitted(true);
+            window.location.reload(); 
+        } catch (err) {
+            setReviewError(err.response?.data?.detail || err.response?.data?.non_field_errors?.[0] || 'Failed to submit review.');
+            console.error("Review submit error:", err.response);
+        }
+    };
 
     const handleBidSubmit = async (e) => {
-        // ... (handleBidSubmit logic is the same)
         e.preventDefault();
         try {
             await api.post(`/api/jobs/${jobId}/bid/`, { amount: bidAmount, details: bidDetails }, {
@@ -66,9 +96,7 @@ function JobDetail() {
         }
     };
 
-    if (loading) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-    }
+    if (loading) {return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;}
     if (error) return <Alert severity="error">{error}</Alert>;
     if (!job) return null;
 
@@ -83,9 +111,6 @@ function JobDetail() {
                 <Typography variant="h3" component="h1" gutterBottom>
                     {job.title}
                 </Typography>
-                
-                {/* Show button only if job is closed AND user is the owner or the hired pro */}
-                
                 {job.is_completed && (isOwner || isHiredPro) && (
                     <Button 
                         variant="contained" 
@@ -104,8 +129,6 @@ function JobDetail() {
             </Typography>
             
             <Divider sx={{ my: 3 }} />
-
-            {/* Bid Form for Professionals - ONLY if the job is still open */}
             {user && user.is_pro && !job.is_completed && (
                 <Box component="form" onSubmit={handleBidSubmit} noValidate sx={{ mb: 4 }}>
                     <Typography variant="h5" component="h2" gutterBottom>Place Your Bid</Typography>
@@ -131,7 +154,6 @@ function JobDetail() {
                     <Button type="submit" variant="contained" sx={{ mt: 2 }}>Submit Bid</Button>
                 </Box>
             )}
-            
             {isOwner && (
                 <Box>
                     <Typography variant="h5" component="h2" gutterBottom>
@@ -172,6 +194,36 @@ function JobDetail() {
                         </List>
                     ) : ( <Typography>No bids have been placed yet.</Typography> )}
                 </Box>
+            )}
+            {isOwner && job.is_completed && !reviewSubmitted && (
+                <Box component="form" onSubmit={handleReviewSubmit} noValidate sx={{ mt: 4, borderTop: '1px solid lightgray', pt: 3 }}>
+                    <Typography variant="h5" component="h2" gutterBottom>Leave a Review</Typography>
+                    <Typography component="legend">Rating</Typography>
+                    <Rating
+                        name="job-rating"
+                        value={rating}
+                        onChange={(event, newValue) => {
+                            setRating(newValue || 0);
+                        }}
+                    />
+                    <TextField
+                        margin="normal"
+                        fullWidth
+                        id="comment"
+                        label="Comment (Optional)"
+                        name="comment"
+                        multiline
+                        rows={3}
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                    />
+                    {reviewError && <Alert severity="error" sx={{ mt: 1, mb: 1 }}>{reviewError}</Alert>}
+                    <Button type="submit" variant="contained" sx={{ mt: 2 }}>Submit Review</Button>
+                </Box>
+            )}
+
+            {isOwner && reviewSubmitted && (
+                 <Typography sx={{ mt: 4, pt: 3, borderTop: '1px solid lightgray' }}>Thank you for submitting your review!</Typography>
             )}
         </Paper>
     );
