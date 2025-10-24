@@ -31,6 +31,18 @@ class ProProfile(models.Model):
     )
     profile_picture_url = models.URLField(blank=True)
 
+    years_experience = models.PositiveIntegerField(null=True, blank=True)
+    instagram_url = models.URLField(blank=True, help_text="Link to Instagram profile (optional)")
+    facebook_url = models.URLField(blank=True, help_text="Link to Facebook profile (optional)")
+    twitter_url = models.URLField(blank=True, help_text="Link to Twitter profile (optional)")
+    personal_website_url = models.URLField(blank=True, help_text="Link to personal website (optional)")
+
+    services_offered = models.TextField(blank=True, help_text="Describe the main services you provide.")
+    # Availability could be simple text for now
+    availability_notes = models.CharField(max_length=255, blank=True, help_text="e.g., Weekdays 9am-5pm, Emergency calls available")
+    # FAQ - store as structured text (e.g., JSON) or keep simple for now
+    faq = models.TextField(blank=True, help_text="Optional FAQ section (e.g., Q: What's your hourly rate? A: ...)")
+
     def __str__(self):
         return f"{self.user.username}'s Pro Profile" 
 
@@ -90,3 +102,18 @@ class Message(models.Model):
 
     def __str__(self):
         return f'From {self.sender.username} to {self.receiver.username} re: "{self.job.title}"'
+    
+
+class Review(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='reviews')
+    pro = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_received', limit_choices_to={'is_pro': True})
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_written', limit_choices_to={'is_pro': False})
+    rating = models.PositiveSmallIntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('job', 'pro', 'customer')
+
+    def __str__(self):
+        return f'Review by {self.customer.username} for {self.pro.username} on job {self.job.id} ({self.rating} stars)'

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import api from './api';
 import { useNavigate } from 'react-router-dom';
 import { Container, Box, TextField, Button, Typography, Alert, Divider } from '@mui/material';
+import GoogleLoginButton from './GoogleLoginButton';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -80,6 +81,9 @@ function Login() {
                     alignItems: 'center',
                 }} >
                 <Typography component="h1" variant="h5"> Sign In </Typography>
+                <Box sx={{ mt: 3, mb: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                    <GoogleLoginButton />
+                </Box>
                 <Divider sx={{ width: '100%' }}>OR</Divider>
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
                     <TextField
