@@ -3,6 +3,7 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from allauth.account import app_settings as allauth_settings
 from .models import User, Job, Bid, Message, ProProfile
 
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for the User model.
@@ -26,9 +27,6 @@ class UserSerializer(serializers.ModelSerializer):
     
 
 class ProProfileSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the ProProfile model.
-    """
     user = serializers.PrimaryKeyRelatedField(read_only=True)
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
@@ -43,6 +41,14 @@ class ProProfileSerializer(serializers.ModelSerializer):
             'bio',
             'service_area_zip_codes',
             'profile_picture_url',
+            'years_experience',
+            'instagram_url',
+            'facebook_url',
+            'twitter_url',
+            'personal_website_url',
+            'services_offered',
+            'availability_notes',
+            'faq',
         ]
         read_only_fields = ['user', 'first_name', 'last_name']
 
