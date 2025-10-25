@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Box, Paper, Typography, List, ListItem, ListItemText, TextField, Button, CircularProgress, Alert } from '@mui/material';
@@ -10,7 +10,9 @@ function ConversationPage() {
     const [error, setError] = useState('');
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('authToken');
-    const socketUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:8000/ws/chat/${jobId}/?token=${token}`;
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const host = window.location.host;
+    const socketUrl = `${protocol}://${host}/ws/chat/${jobId}/?token=${token}`;
     const {
         sendMessage,
         lastMessage,
@@ -26,10 +28,8 @@ function ConversationPage() {
     });
     useEffect(() => {
         if (lastMessage !== null) {
-            console.log("Raw message received from WebSocket:", lastMessage.data);
             try {
                 const data = JSON.parse(lastMessage.data);
-                console.log("Parsed data:", data);
                 if (data.type === 'message_history' && Array.isArray(data.messages)) {
                     setMessages(data.messages);
                 } else if (data.message && typeof data.message === 'object') {
