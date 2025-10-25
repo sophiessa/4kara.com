@@ -118,7 +118,18 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 WSGI_APPLICATION = 'fourkara.wsgi.application'
+ASGI_APPLICATION = 'fourkara.asgi.application'
 
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [REDIS_URL],
+        },
+    },
+}
 DATABASES = {
     'default': dj_database_url.config(
         conn_max_age=600
