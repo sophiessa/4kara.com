@@ -21,12 +21,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not allowed_to_join:
             await self.close()
             return
-        await self.channel_layer.group_add(
-            self.job_group_name,
-            self.channel_name
-        )
+        
+        await self.channel_layer.group_add(self.job_group_name, self.channel_name)
         await self.accept()
         print(f"WebSocket connected: user {self.user.id} to job {self.job_id}")
+
+        history = await self.get_message_history(self.job_id)
+        await self.send(text_data=json.dumps({
+            'type': 'message_history',
+            'messages': history
+        }))
+
+    @database_sync_to_async
+    def get_message_history(self, job_id, limit=50):
+        """Fetches the most recent messages for a job."""
+        try:
+            job = Job.objects.get(id=job_id)
+            messages = Message.objects.filter(job=job).order_by('-timestamp')[:limit][::-1]
+            serialized_history = []
+            for msg in messages:
+                 serialized_history.append({
+                     'id': msg.id,
+                     'sender': msg.sender.id,
+                     'sender_name': f"{msg.sender.first_name} {msg.sender.last_name}".strip() or msg.sender.username,
+                     'receiver': msg.receiver.id,
+                     'body': msg.body,
+                     'timestamp': msg.timestamp.isoformat(),
+                 })
+            return serialized_history
+        except Job.DoesNotExist:
+            return []
 
     async def disconnect(self, close_code):
         """

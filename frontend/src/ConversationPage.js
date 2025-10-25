@@ -30,8 +30,9 @@ function ConversationPage() {
             try {
                 const data = JSON.parse(lastMessage.data);
                 console.log("Parsed data:", data);
-                if (data.message && typeof data.message === 'object') {
-                    console.log("Message object to add:", data.message);
+                if (data.type === 'message_history' && Array.isArray(data.messages)) {
+                    setMessages(data.messages);
+                } else if (data.message && typeof data.message === 'object') {
                     setMessages((prev) => [...prev, data.message]);
                 } else {
                     console.warn("Received unexpected WebSocket message format:", data);
